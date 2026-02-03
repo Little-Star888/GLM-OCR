@@ -224,3 +224,128 @@ class TestResultFormatter:
         # Repeated punctuation cleanup
         cleaned = formatter._clean_content("Hello....World")
         assert "....." not in cleaned
+
+
+class TestMaaSClient:
+    """Tests for MaaSClient."""
+
+    def test_maas_config_defaults(self):
+        """MaaSApiConfig has correct defaults."""
+        from glmocr.config import MaaSApiConfig
+
+        config = MaaSApiConfig()
+        assert config.enabled is False
+        assert config.api_url == "https://open.bigmodel.cn/api/paas/v4/layout_parsing"
+        assert config.model == "glm-ocr"
+        assert config.verify_ssl is True
+
+    def test_maas_client_requires_api_key(self):
+        """MaaSClient raises error when API key is missing."""
+        from glmocr.maas_client import MaaSClient
+        from glmocr.config import MaaSApiConfig
+
+        config = MaaSApiConfig(api_key=None)
+        with pytest.raises(ValueError) as exc:
+            MaaSClient(config)
+        assert "API key is required" in str(exc.value)
+
+    def test_maas_client_init_with_api_key(self):
+        """MaaSClient initializes correctly with API key."""
+        from glmocr.maas_client import MaaSClient
+        from glmocr.config import MaaSApiConfig
+
+        config = MaaSApiConfig(api_key="test-key-12345")
+        client = MaaSClient(config)
+        assert client.api_key == "test-key-12345"
+        assert client.model == "glm-ocr"
+
+    def test_maas_client_prepare_file_url(self):
+        """MaaSClient handles URLs correctly."""
+        from glmocr.maas_client import MaaSClient
+        from glmocr.config import MaaSApiConfig
+
+        config = MaaSApiConfig(api_key="test-key")
+        client = MaaSClient(config)
+
+        # URL should be returned as-is
+        url = "https://example.com/image.png"
+        result = client._prepare_file(url)
+        assert result == url
+
+    def test_maas_client_prepare_file_bytes(self):
+        """MaaSClient encodes bytes to base64."""
+        import base64
+        from glmocr.maas_client import MaaSClient
+        from glmocr.config import MaaSApiConfig
+
+        config = MaaSApiConfig(api_key="test-key")
+        client = MaaSClient(config)
+
+        # Bytes should be encoded to base64
+        data = b"test image data"
+        result = client._prepare_file(data)
+        expected = base64.b64encode(data).decode("utf-8")
+        assert result == expected
+
+    def test_maas_client_context_manager(self):
+        """MaaSClient works as context manager."""
+        from glmocr.maas_client import MaaSClient
+        from glmocr.config import MaaSApiConfig
+
+        config = MaaSApiConfig(api_key="test-key")
+        with MaaSClient(config) as client:
+            assert client._session is not None
+        assert client._session is None
+
+    @patch("glmocr.maas_client.requests.Session")
+    def test_maas_client_parse_success(self, mock_session_cls):
+        """MaaSClient.parse returns response on success."""
+        from glmocr.maas_client import MaaSClient
+        from glmocr.config import MaaSApiConfig
+
+        # Mock successful response
+        mock_response = type(
+            "Response",
+            (),
+            {
+                "status_code": 200,
+                "json": lambda self: {
+                    "id": "task_123",
+                    "model": "glm-ocr",
+                    "md_results": "# Test",
+                    "layout_details": [
+                        [{"index": 0, "label": "text", "content": "Hello"}]
+                    ],
+                },
+            },
+        )()
+
+        mock_session = mock_session_cls.return_value
+        mock_session.post.return_value = mock_response
+
+        config = MaaSApiConfig(api_key="test-key")
+        client = MaaSClient(config)
+        client.start()
+
+        result = client.parse("https://example.com/image.png")
+        assert result["id"] == "task_123"
+        assert result["md_results"] == "# Test"
+
+    def test_glmocr_detects_maas_mode(self):
+        """GlmOcr detects MaaS mode from config."""
+        from glmocr.config import GlmOcrConfig
+
+        # Create config with MaaS enabled
+        config = GlmOcrConfig()
+        config.pipeline.maas.enabled = True
+        config.pipeline.maas.api_key = "test-key"
+
+        assert config.pipeline.maas.enabled is True
+
+    def test_config_maas_in_pipeline(self):
+        """PipelineConfig has maas field."""
+        from glmocr.config import PipelineConfig
+
+        config = PipelineConfig()
+        assert hasattr(config, "maas")
+        assert config.maas.enabled is False
