@@ -37,9 +37,7 @@ We provide an SDK for using GLM-OCR more efficiently and conveniently.
 ### Install SDK
 
 ```bash
-pip install glmocr
-
-# Or install from source
+# Install from source
 git clone https://github.com/zai-org/glm-ocr.git
 cd glm-ocr && pip install -e .
 
