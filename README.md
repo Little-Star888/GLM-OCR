@@ -130,6 +130,10 @@ pipeline:
     api_port: 8080
 ```
 
+#### Option 3: Apple Silicon with mlx-vlm
+
+See the **[MLX Detailed Deployment Guide](examples/mlx-deploy/README.md)** for full setup instructions, including environment isolation and troubleshooting.
+
 ### SDK Usage Guide
 
 #### CLI
