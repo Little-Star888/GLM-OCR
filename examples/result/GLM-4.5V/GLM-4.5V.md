@@ -1,4 +1,8 @@
+<div align="center">
+
 # GLM-4.5V and GLM-4.1V-Thinking: Towards Versatile Multimodal Reasoning with Scalable Reinforcement Learning
+
+</div>
 
 GLM-V Team
 
@@ -8,25 +12,37 @@ Zhipu AI & Tsinghua University
 
 ## Abstract
 
-We present GLM-4.1V-Thinking and GLM-4.5V, a family of vision-language models (VLMs) designed to advance general-purpose multimodal understanding and reasoning. In this report, we share our key findings in the development of the reasoning-centric training framework. We first develop a capable vision foundation model with significant potential through large-scale pre-training, which arguably sets the upper bound for the final performance. We then propose Reinforcement Learning with Curriculum Sampling (RLCS) to unlock the full potential of the model, leading to comprehensive capability enhancement across a diverse range of tasks, including STEM problem solving, video understanding, content recognition, coding, grounding, GUI-based agents, and long document interpretation. In a comprehensive evaluation across 42 public benchmarks, GLM-4.5V achieves state-of-the-art performance on nearly all tasks among open-source models of similar size, and demonstrates competitive or even superior results compared to closed-source models such as Gemini-2.5-Flash on challenging tasks including Coding and GUI Agents. Meanwhile, the smaller GLM-4.1V-9B-Thinking remains highly competitive—achieving superior results to the much larger Qwen2.5-VL-72B on 29 benchmarks. We open-source both GLM-4.1V-9B-Thinking and GLM-4.5V. Code, models and more information are released at https://github.com/zai-org/ GLM-V.
+We present GLM-4.1V-Thinking and GLM-4.5V, a family of vision-language models (VLMs) designed to advance general-purpose multimodal understanding and reasoning. In this report, we share our key findings in the development of the reasoning-centric training framework. We first develop a capable vision foundation model with significant potential through large-scale pre-training, which arguably sets the upper bound for the final performance. We then propose Reinforcement Learning with Curriculum Sampling (RLCS) to unlock the full potential of the model, leading to comprehensive capability enhancement across a diverse range of tasks, including STEM problem solving, video understanding, content recognition, coding, grounding, GUI-based agents, and long document interpretation. In a comprehensive evaluation across 42 public benchmarks, GLM-4.5V achieves state-of-the-art performance on nearly all tasks among open-source models of similar size, and demonstrates competitive or even superior results compared to closed-source models such as Gemini-2.5-Flash on challenging tasks including Coding and GUI Agents. Meanwhile, the smaller GLM-4.1V-9B-Thinking remains highly competitiveachieving superior results to the much larger Qwen2.5-VL-72B on 29 benchmarks. We open-source both GLM-4.1V-9B-Thinking and GLM-4.5V. Code, models and more information are released at https://github.com/zai-org/ GLM-V.
 
 ![Image 0-0](imgs/cropped_page0_idx0.jpg)
 
+<div align="center">
+
 (A) Comparison with baselines.
+
+</div>
 
 ![Image 0-1](imgs/cropped_page0_idx1.jpg)
 
+<div align="center">
+
 (B) Reinforcement learning gains.
 
-Figure 1: (A) GLM-4.5V achieves efficient scaling based on its compact predecessor, GLM-4.1V 9B-Thinking, and compares favorably with Gemini-2.5-Flash, according to benchmark assessments. Table 2 presents full performance comparison. (B) Reinforcement learning substantially boosts the model's performance, with gains of up to $ +10.6\% $ when experimented with GLM-4.5V.
+</div>
+
+<div align="center">
+
+Figure 1: (A) GLM-4.5V achieves efficient scaling based on its compact predecessor, GLM-4.1V 9B-Thinking, and compares favorably with Gemini-2.5-Flash, according to benchmark assessments. Table 2 presents full performance comparison. (B) Reinforcement learning substantially boosts the model's performance, with gains of up to +10.6% when experimented with GLM-4.5V.
+
+</div>
 
 ## 1 Introduction
 
-Vision-language models (VLMs) have become a crucial cornerstone of modern intelligent systems, enabling the perception and understanding of visual information beyond text. Over the past decade, as the intelligence level of models has advanced dramatically [36; 47; 20; 4], the complexity of corresponding multimodal intelligence tasks has increased accordingly. From solving scientific problems [67; 32; 34] to developing autonomous agents [21; 62; 43], the demands on VLMs have far surpassed simple visual content perception [31], with an increasing emphasis on advanced reasoning abilities. Recently, numerous studies have shown that long-form reasoning [60] and scalable reinforcement learning [42] can significantly enhance the ability of large language models (LLMs) to solve complex problems [23; 17]. Several previous works have attempted to enhance the reasoning capabilities of VLMs using similar paradigms [46; 33], but they mainly focus on specific domains. The open-source community currently also lacks a multimodal reasoning model that consistently outperforms traditional non-thinking models of comparable parameter scale across a broad range of scenarios and tasks.
+Vision-language models (VLMs) have become a crucial cornerstone of modern intelligent systems, enabling the perception and understanding of visual information beyond text. Over the past decade, as the intelligence level of models has advanced dramatically [36;47;20;4], the complexity of corresponding multimodal intelligence tasks has increased accordingly. From solving scientific problems [67;32;34] to developing autonomous agents [21;62;43], the demands on VLMs have far surpassed simple visual content perception [31], with an increasing emphasis on advanced reasoning abilities. Recently, numerous studies have shown that long-form reasoning [60] and scalable reinforcement learning [42] can significantly enhance the ability of large language models (LLMs) to solve complex problems [23;17]. Several previous works have attempted to enhance the reasoning capabilities of VLMs using similar paradigms [46;33], but they mainly focus on specific domains. The open-source community currently also lacks a multimodal reasoning model that consistently outperforms traditional non-thinking models of comparable parameter scale across a broad range of scenarios and tasks.
 
 In this report, we share our key findings in the development of GLM-4.1V-Thinking and GLM-4.5V, a family of VLMs designed to advance general-purpose multimodal reasoning. Our training framework is structured around a unified objective: to comprehensively enhance the model's reasoning capabilities through scalable reinforcement learning. For pre-training, we curate a broad and diverse corpus of knowledge-intensive multimodal data to equip the model with strong foundational capabilities, including (a) massive image-text pairs with accurate factual knowledge; (b) a self-curated academic corpus with interleaved image and text; (c) annotated documents and diagrams, instructional videos, and grounding data spanning both natural and synthetic images. This foundation model serves as a high-potential multimodal reasoning base for subsequent reinforcement learning. In the supervised fine-tuning phase, we construct carefully designed, domain-specific datasets that teach the model to perform effective reasoning with a standardized format across a wide range of tasks. Finally, we introduce Reinforcement Learning with Curriculum Sampling (RLCS) to drive large-scale, cross-domain reasoning capabilities. RLCS is a multi-domain reinforcement learning framework that combines curriculum learning with difficulty-aware sampling to improve training efficiency by selecting tasks and samples suited to the model's current competence. Our reinforcement learning process enhances training effectiveness and stability, and systematically improves the model's reasoning abilities through interaction and feedback across diverse domains.
 
-To advance research in this field, we open-source GLM-4.1V-9B-Thinking (9 billion parameters) and GLM-4.5V (106B-A12B: 106 billion total parameters, 12 billion activated parameters), both of which achieve state-of-the-art performance among models of comparable size. In a comprehensive evaluation across 42 public benchmarks, GLM-4.5V achieves state-of-the-art performance on nearly all tasks, consistently outperforming strong open-source models such as Step-3 (321B-A38B) and Qwen-2.5-VL-72B, and achieves comparable or even superior performance on 22 benchmarks relative to the closed-source Gemini-2.5-Flash. Notably, GLM-4.5V advances the state-of-the-art for open-source VLMsof comparable size by roughly 10% or more across a wide range of tasks, including general VQA (MMStar, GeoBench), STEM (MMMU Pro, MathVerse, WeMath), chart understanding (ChartQAPro, ChartMuseum), long document understanding (MMLongBenchDoc), visual grounding (TreeBench, Ref-L4-test), spatial reasoning (ERQA), GUI agents (OSWorld, AndroidWorld, WebVoyagerSom, WebQuest), VLM coding (Design2Code, Flame-React-Eval), and video understanding (VideoMMMU, LVBench, MotionBench). GLM-4.1V-9B-Thinking also demonstrates competitive or superior performance compared to much larger models such as Qwen2.5- VL-72B on 29 benchmarks. We further open-source the pre-trained base model, GLM-4.1V-9B-Base, to provide a strong foundation for all researchers to develop and extend their own models.
+To advance research in this field, we open-source GLM-4.1V-9B-Thinking (9 billion parameters) and GLM-4.5V (106B-A12B: 106 billion total parameters, 12 billion activated parameters), both of which achieve state-of-the-art performance among models of comparable size. In a comprehensive evaluation across 42 public benchmarks, GLM-4.5V achieves state-of-the-art performance on nearly all tasks, consistently outperforming strong open-source models such as Step-3 (321B-A38B) and Qwen-2.5-VL-72B, and achieves comparable or even superior performance on 22 benchmarks relative to the closed-source Gemini-2.5-Flash. Notably, GLM-4.5V advances the state-of-the-art for open-source VLMs of comparable size by roughly 10% or more across a wide range of tasks, including general VQA (MMStar, GeoBench), STEM (MMMU Pro, MathVerse, WeMath), chart understanding (ChartQAPro, ChartMuseum), long document understanding (MMLongBenchDoc), visual grounding (TreeBench, Ref-L4-test), spatial reasoning (ERQA), GUI agents (OSWorld, AndroidWorld, WebVoyagerSom, WebQuest), VLM coding (Design2Code, Flame-React-Eval), and video understanding (VideoMMMU, LVBench, MotionBench). GLM-4.1V-9B-Thinking also demonstrates competitive or superior performance compared to much larger models such as Qwen2.5-VL-72B on 29 benchmarks. We further open-source the pre-trained base model, GLM-4.1V-9B-Base, to provide a strong foundation for all researchers to develop and extend their own models.
 
 We summarize our key findings from the development process below and provide more detailed explanations in the following sections.
 
@@ -40,7 +56,7 @@ Sampling (RLCS) and dynamic sampling expansion via ratio-based Exponential Movin
 
 - In summary, our contributions are as follows:
 
-- We present GLM-4.1V-Thinking and GLM-4.5V, a family of VLMs developed to advance general-purpose multimodal reasoning. Notably, GLM-4.5V natively supports both "thinking" and "nonthinking" modes, enabling flexible trade-offs between performance and efficiency. We introduce the model design and the reasoning-centric training framework, along with key insights and challenges encountered during the development process.
+- We present GLM-4.1V-Thinking and GLM-4.5V, a family of VLMs developed to advance generalpurpose multimodal reasoning. Notably, GLM-4.5V natively supports both "thinking" and "nonthinking" modes, enabling flexible trade-offs between performance and efficiency. We introduce the model design and the reasoning-centric training framework, along with key insights and challenges encountered during the development process.
 
 - We open-source GLM-4.1V-9B-Thinking, GLM-4.1V-9B-Base, GLM-4.5V, and other useful components such as domain-specific reward systems, to facilitate further research in this area. Code, models and more information are released at https://github.com/zai-org/GLM-V.
 
@@ -50,16 +66,16 @@ Sampling (RLCS) and dynamic sampling expansion via ratio-based Exponential Movin
 
 Figure 2 shows the shared architecture of GLM-4.1V-Thinking and GLM-4.5V, composed of three core components: a vision encoder, an MLP adapter, and a large language model (LLM) as the decoder. We employ AIMv2-Huge [9] as the initialization of the vision encoder. For the LLM component, we use GLM-4-9B-0414 [13] for the GLM-4.1V-Thinking model, and GLM-4.5-Air [13] for the GLM-4.5V model. Within the vision encoder, we adopt a strategy similar to Qwen2-VL [57], replacing the original 2D convolutions with 3D convolutions. This enables temporal downsampling by a factor of two for video inputs, thereby improving model efficiency. For single-image inputs, the image is duplicated to maintain consistency.
 
-To enable our underlying Vision Transformer (ViT) to support arbitrary image resolutions and aspect ratios, we introduce two adaptations. First, we integrate 2D-RoPE [44] into the ViT's self-attention layers, enabling the model to effectively process images with extreme aspect ratios (over 200:1) or high resolutions (beyond 4K). Second, to preserve the foundational capabilities of the pre-trained ViT, we retain its original learnable absolute position embeddings. During training, these embeddings are dynamically adapted to variable-resolution inputs via bicubic interpolation. Specifically, for an input image divided into a grid of $H_{p} \times W_{p}$ patches, the integer coordinates $\mathbf{g} = (w,h)$ of each patch are first normalized to a continuous grid $\mathbf{g}_{\mathrm{norm}}$ spanning $[-1,1]$:
+To enable our underlying Vision Transformer (ViT) to support arbitrary image resolutions and aspect ratios, we introduce two adaptations. First, we integrate 2D-RoPE [44] into the ViT's self-attention layers, enabling the model to effectively process images with extreme aspect ratios (over 200:1) or high resolutions (beyond 4K). Second, to preserve the foundational capabilities of the pre-trained ViT, we retain its original learnable absolute position embeddings. During training, these embeddings are dynamically adapted to variable-resolution inputs via bicubic interpolation. Specifically, for an input image divided into a grid of $ H_{p}\times W_{p} $ patches, the integer coordinates $ \mathbf{g}=(w,h) $ of each patch are first normalized to a continuous grid $ \mathbf{g}_{\mathrm{norm}} $ spanning $ [-1,1] $:
 
 $$
-\mathbf{g}_{\text{norm}} = (w_{\text{norm}}, h_{\text{norm}}) = 2 \cdot \left( \frac{w + 0.5}{W_p}, \frac{h + 0.5}{H_p} \right) - 1
+\mathbf {g} _ {\mathrm {n o r m}} = \left(w _ {\mathrm {n o r m}}, h _ {\mathrm {n o r m}}\right) = 2 \cdot \left(\frac {w + 0 . 5}{W _ {p}}, \frac {h + 0 . 5}{H _ {p}}\right) - 1
 $$
 
-These normalized coordinates are then used to sample from the original position embedding table $P_{\mathrm{orig}}$ using a bicubic interpolation function $\mathcal{I}_{\mathrm{bicubic}}$ to generate the final adapted embedding $P_{\mathrm{adapted}}$ for that patch:
+These normalized coordinates are then used to sample from the original position embedding table $ P_{\mathrm{orig}} $ using a bicubic interpolation function $ \mathcal{I}_{\mathrm{bicubic}} $ to generate the final adapted embedding $ P_{\mathrm{adapted}} $ for that patch:
 
 $$
-P_{\text{adapted}}(\mathbf{g}) = \mathcal{I}_{\text{bicubic}}(P_{\text{orig}}, \mathbf{g}_{\text{norm}})
+P _ {\mathrm {a d a p t e d}} (\mathbf {g}) = \mathcal {I} _ {\mathrm {b i c u b i c}} \left(P _ {\mathrm {o r i g}}, \mathbf {g} _ {\mathrm {n o r m}}\right)
 $$
 
 To further enhance spatial awareness on the language side, we extend RoPE to 3D-RoPE in the LLM. This extension provides superior spatial understanding for multimodal contexts, while preserving the original model's text-related capabilities.
@@ -68,11 +84,19 @@ After addressing spatial adaptation, we turn to temporal modeling in video input
 
 ![Image 3-2](imgs/cropped_page3_idx2.jpg)
 
+<div align="center">
+
 Figure 2: The shared architecture of GLM-4.1V-Thinking and GLM-4.5V. The proposed model consists of three components: (1) a ViT Encoder to process and encode images and videos, (2) an MLP Projector to align visual features to textual tokens, (3) a Large Language Model as a Language Decoder to process multimodal tokens and yield token completions. Our model can perceive images and videos as their native resolutions and aspect ratios. For video inputs, additional time index tokens are inserted behind each frame to enhance the model's temporal understanding capability.
+
+</div>
 
 ![Image 3-3](imgs/cropped_page3_idx3.jpg)
 
-Figure 3: Comparison of pass@k performance on a subset of MathVista consisting of non-multiple- choice questions.
+<div align="center">
+
+Figure 3: Comparison of pass@k performance on a subset of MathVista consisting of non-multiple choice questions.
+
+</div>
 
 ## 3 Pre-training
 
@@ -80,7 +104,11 @@ To develop a more powerful visual language foundation model, we incorporate a di
 
 ![Image 4-4](imgs/cropped_page4_idx4.jpg)
 
+<div align="center">
+
 Figure 4: Examples of recaption model results. The recaptioning process eliminates noise and hallucinated content from the original data, while fully retaining factual knowledge.
+
+</div>
 
 ## 3.1 Pre-training Data
 
@@ -104,7 +132,7 @@ and a purpose-built image classifier for enhanced precision. Furthermore, we exc
 
 2. Academic book processing pipeline: As another core data source, we collect over 100 million digitized books. To ensure content relevance and quality, we first filter this collection to select books pertaining to key domains, including science, technology, engineering, and mathematics (STEM). Subsequently, we employ a PDF parsing tool to perform a deep parsing of these PDF documents, enabling the extraction of high-quality interleaved image-and-text content.
 
-OCR data. To bolster the model's OCR capabilities, we construct a large-scale pre-training dataset comprising 220 million images. This dataset is meticulously composed of three distinct components, each designed to address a specific aspect of text recognition:
+OCR data. To bolster the model's OCR capabilities, we construct a large-scale pre-training dataset comprising 220 million images. This dataset is meticulously composed of three distinct components each designed to address a specific aspect of text recognition:
 
 1. Synthetic document images: We render text from language pre-training corpora using varied fonts, sizes, colors, and orientations. These rendered texts are then composited onto diverse image backgrounds sourced from the LAION dataset, producing synthetic images that cover a broad spectrum of practical application scenarios.
 
@@ -144,7 +172,7 @@ Long-context continual training. Following pre-training, we perform a continual 
 
 ## 4 Supervised Fine-Tuning
 
-The supervised fine-tuning (SFT) stage functions as a bridge that connects pre-training to reinforcement learning, transforming a base vision-language model (VLM) into one capable of long chain-of-thought (CoT) inference. Our long-CoT corpus is carefully curated to enhance reasoning style and human alignment, spanning both verifiable domains (e.g., STEM problems) and nonverifiable tasks (e.g., instruction following, open-ended writing). Unlike prior workflows [59, 20, 16] that apply SFT to short CoT data, we deliberately omit this step: rather than injecting new knowledge, we view SFT's role as aligning the model's existing vision-language understanding with a more effective thinking and response style. This alignment primes the model for a stronger cold start, enabling more efficient and stable reinforcement learning in the next phase.
+The supervised fine-tuning (SFT) stage functions as a bridge that connects pre-training to reinforcement learning, transforming a base vision-language model (VLM) into one capable of long chain-of-thought (CoT) inference. Our long-CoT corpus is carefully curated to enhance reasoning style and human alignment, spanning both verifiable domains (e.g., STEM problems) and nonverifiable tasks (e.g., instruction following, open-ended writing). Unlike prior workflows [59; 20; 16] that apply SFT to short CoT data, we deliberately omit this step: rather than injecting new knowledge, we view SFT's role as aligning the model's existing vision-language understanding with a more effective thinking and response style. This alignment primes the model for a stronger cold start, enabling more efficient and stable reinforcement learning in the next phase.
 
 ## 4.1 Supervised Fine-Tuning Data
 
@@ -152,7 +180,7 @@ To facilitate subsequent reinforcement learning, we curate a high-quality datase
 
 Data composition. Our reasoning dataset spans a wide spectrum of domains, with a primary focus on verifiable tasks whose outcomes can be rigorously assessed and refined via reinforcement learning. We also include non-verifiable tasks, such as open-ended visual question answering, to broaden and strengthen the model's general reasoning capabilities across diverse contexts. The dataset is primarily composed of data in Chinese and English, with a small proportion in other languages. We employ our pre-trained model to filter out instances that are either too easy or excessively hard, maintaining a moderate overall difficulty level suitable for training.
 
-**Response formatting.** Each response follows a standardized structure:
+Response formatting. Each response follows a standardized structure:
 
 ```html
 
@@ -160,7 +188,7 @@ Data composition. Our reasoning dataset spans a wide spectrum of domains, with a
 
 ```
 
-The <think> part captures the model's reasoning process, including strategies such as reflection, backtracking, retrying, and verification. The <answer> part presents a concise, complete and logically sound solution. For verifiable tasks with a specific final answer, the final result in the <answer> part is required to be wrapped with <|begin_of_box|> and <|end_of_box|>, and only one boxed span is acceptable. This annotation facilitates more accurate answer extraction during the RL phase. Note that we include <think>, </think>, <answer>, </answer>, <|begin_of_box|>, <|end_of_box|> to the tokenizer's vocabulary as special tokens to facilitate easier and accurate online parsing. Note that in the responses of GLM-4.5V the special tokens <answer> and </answer> are eliminated.
+The <think> part captures the model's reasoning process, including strategies such as reflection, backtracking, retrying, and verification. The <answer> part presents a concise, complete and logically sound solution. For verifiable tasks with a specific final answer, the final result in the <answer> part is required to be wrapped with <begin_of_box|> and <end_of_box|>, and only one boxed span is acceptable. This annotation facilitates more accurate answer extraction during the RL phase. Note that we include <think>, </think>, <answer>, </answer>, <begin_of_box|>, <end_of_box|> to the tokenizer's vocabulary as special tokens to facilitate easier and accurate online parsing. Note that in the responses of GLM-4.5V the special tokens <answer> and </answer> are eliminated.
 
 Response curation. The quality of the cold-start dataset is critical to the stability of RL training. In practice, we find that poorly constructed data can lead to training instability or even collapse. To mitigate this, we implement a rigorous data cleaning pipeline. This process enforces strict adherence to formatting conventions (e.g., correct usage of <think> and <answer> tags) and removes examples with inconsistent or noisy reasoning styles. Also, we filter out responses containing mixed-language phrasing or redundant thought patterns.
 
@@ -168,7 +196,7 @@ Iterative data enhancement. To improve the quality and challenge level of the co
 
 ## 4.2 Training Recipe
 
-We perform full-parameter fine-tuning with a sequence length of 32,768 tokens and a global batch size of 32. The training corpus includes the long-form reasoning data described in 4.1 spanning multiple domains. In addition to multimodal data, we also incorporate high-quality text-only long-form examples covering math problem solving, multi-turn conversation, agent planning, and instruction following. These examples help preserve the model's core language understanding and general reasoning abilities throughout multimodal fine-tuning.
+We perform full-parameter fine-tuning with a sequence length of 32,768 tokens and a global batch size of 32. The training corpus includes the long-form reasoning data described in $ \§4.1 $ spanning multiple domains. In addition to multimodal data, we also incorporate high-quality text-only long-form examples covering math problem solving, multi-turn conversation, agent planning, and instruction following. These examples help preserve the model's core language understanding and general reasoning abilities throughout multimodal fine-tuning.
 
 Interestingly, we observe that even when cold-start training uses noisy reasoning data, which contain formatting inconsistencies or repetitive patterns, subsequent RL remains effective. This suggests that imperfect reasoning traces can still provide useful guidance. Nonetheless, models initialized with clean and consistent data show more stable RL convergence and achieve higher overall performance.
 
@@ -206,7 +234,11 @@ Pilot RL experiments. Finally, we perform preliminary RL experiments in each sub
 
 We establish a reward system compatible with both RLVR, and RLHF and tailor it for every multimodal domain. For RLVR tasks, the system first extracts the segment containing the final answer from the rollout outputs, then compares this key answer against the reference answer to determine
 
+<div align="center">
+
 Evolution of Rewards under a low-quality reward system:
+
+</div>
 
 ![Image 9-5](imgs/cropped_page9_idx5.jpg)
 
@@ -214,7 +246,11 @@ Evolution of Rewards under a low-quality reward system:
 
 ![Image 9-7](imgs/cropped_page9_idx7.jpg)
 
+<div align="center">
+
 Evolution of benchmark score under a low-quality reward system:
+
+</div>
 
 ![Image 9-8](imgs/cropped_page9_idx8.jpg)
 
@@ -224,7 +260,11 @@ Evolution of benchmark score under a low-quality reward system:
 
 ![Image 9-11](imgs/cropped_page9_idx11.jpg)
 
-Figure 5: Training reward curves (top) and evaluation metrics (bottom) when low-quality verifiers exist in some multimodal sub-domains. The STEM verifier is finely tuned, but the other-single-image and other-multi-image verifiers are not, causing: (a) Reward noise other-single-image: The model tweaks outputs to drive rewards up without improving actual accuracy. (b) Reward hacking othermulti-image: The model learns shortcuts that repeatedly fool the verifier, inflating rewards. After step 150, STEM reward growth stalls, the overall multimodal benchmark declines, and STEM-related benchmarks (MMMU, MathVista, AI2D) drop sharply.
+<div align="center">
+
+Figure 5: Training reward curves (top) and evaluation metrics (bottom) when low-quality verifiers exist in some multimodal sub-domains. The STEM verifier is finely tuned, but the other-single-image and other-multi-image verifiers are not, causing: (a) Reward noise@other-single-image: The model tweaks outputs to drive rewards up without improving actual accuracy. (b) Reward hacking@other-multi-image: The model learns shortcuts that repeatedly fool the verifier, inflating rewards. After step 150, STEM reward growth stalls, the overall multimodal benchmark declines, and STEM-related benchmarks (MMMU, MathVista, AI2D) drop sharply.
+
+</div>
 
 correctness, and finally returns a reward value in binary (0/1) or continuous form. For RLHF tasks, it directly takes the answer segment of the output and scores it using the reward model.
 
@@ -236,13 +276,17 @@ We highlight several challenges and difficulties we identified in reward model d
 
 The extraction of the final answer in RLVR. For RLVR, we first extract the final answer from the model's response and then conduct a correctness comparison. There are generally two extraction methods: rule-based extraction according to box markers and extraction via LLMs. The latter is more flexible, which doesn't force the model to emit explicit box markers around the key answer, avoiding cumbersome format tuning and preserving the original user-friendly response format. We find that for simple academic questions (where the answer is usually a single number) or single-category tasks (where the answer follows a fixed-range format), it's straightforward to design prompts that enable an LLM to extract the answer precisely. However, in our multimodal, open-domain RL setting, the diversity of questions and answers increases dramatically, making extraction significantly more complex with numerous corner cases. LLM-based extraction is often proved to be inaccurate, causing errors in the subsequent correctness judgment. Moreover, in some cases, the "answer" segment would
 
+<div align="center">
+
 Table 1: Domain-specific reward design in the reward system of GLM-4.1V-Thinking and GLM-4.5V.
 
-<table><thead><tr><th>Category</th><th>Domain</th><th>Rule</th><th>Model</th><th>Binary</th><th>Reward design details</th></tr></thead><tbody><tr><td rowspan="3">STEM</td><td>Math</td><td>✓</td><td>✓</td><td>✓</td><td>Numeric: numeric matching via Sympy with tolerance; Others: exact matching or LLM judge.</td></tr><tr><td>Physics</td><td>✓</td><td>✓</td><td>✓</td><td>If physical units present, use LLM judgment; otherwise, similar to Math.</td></tr><tr><td>Chemistry</td><td>✓</td><td>✓</td><td>✓</td><td>If chemical units present, use LLM judgment; otherwise, similar to Math.</td></tr><tr><td rowspan="3">Long Document Chart &amp; OCR</td><td>Long Document</td><td></td><td>✓</td><td>✓</td><td>Semantic matching via LLM.</td></tr><tr><td>Chart</td><td>✓</td><td>✓</td><td>✓</td><td>Numeric: similar to Math (except Year); Textual: exact match or LLM judge.</td></tr><tr><td>OCR</td><td>✓</td><td></td><td></td><td>Using edit distance, reward = 1 - d<sub>edit</sub>(ans, gt) / max(|ans|, |gt|).</td></tr><tr><td rowspan="2">General VQA</td><td>VQA</td><td>✓</td><td>✓</td><td>✓</td><td>Try exact matching with Sympy first. If that fails, then fall back to model judgment.</td></tr><tr><td>GeoGuess</td><td>✓</td><td>✓</td><td></td><td>Semantic matching via LLM.</td></tr><tr><td>Visual Grounding</td><td>Grounding</td><td>✓</td><td></td><td></td><td>Reward = #boxes with IoU &gt; τ divided by total boxes.</td></tr><tr><td>Spatial Rec &amp; Reasoning</td><td>Spatial</td><td></td><td>✓</td><td>✓</td><td>Try exact matching with Sympy first. If that fails, then fall back to model judgment.</td></tr><tr><td>GUI Agents</td><td>GUI Agent</td><td>✓</td><td>✓</td><td></td><td>Action prediction: action+IoU; Grounding: IoU; QA: exact or semantic matching.</td></tr><tr><td>Video</td><td>Video</td><td>✓</td><td>✓</td><td>✓</td><td>Exact matching, or semantic matching via LLM judge.</td></tr></tbody></table>
+</div>
+
+<table border="1"><tr><td>Category</td><td>Domain</td><td>Rule</td><td>Model</td><td>Binary</td><td>Reward design details</td></tr><tr><td rowspan="3">STEM</td><td>Math</td><td>√</td><td>√</td><td>√</td><td>Numeric: numeric matching via Sympy with tolerance; Others: exact matching or LLM judge.</td></tr><tr><td>Physics</td><td>√</td><td>√</td><td>√</td><td>If physical units present, use LLM judgment; otherwise, similar to Math.</td></tr><tr><td>Chemistry</td><td>√</td><td>√</td><td>√</td><td>If chemical units present, use LLM judgment; otherwise, similar to Math.</td></tr><tr><td rowspan="3">Long DocumentChart&amp;OCR</td><td>Long Document</td><td></td><td>√</td><td>√</td><td>Semantic matching via LLM.</td></tr><tr><td>Chart</td><td>√</td><td>√</td><td>√</td><td>Numeric: similar to Math (except Year); Textual: exact match or LLM judge.</td></tr><tr><td>OCR</td><td>√</td><td></td><td></td><td>Using edit distance, reward=1- $ \frac{d_{\mathrm{edit}}(\mathrm{ans},\mathrm{gt})}{\max(|\mathrm{ans}|,|\mathrm{gt}|)}$.</td></tr><tr><td rowspan="2">General VQA</td><td>VQA</td><td>√</td><td>√</td><td>√</td><td>Try exact matching with Sympy first. If that fails, then fall back to model judgment.</td></tr><tr><td>GeoGuess</td><td>√</td><td>√</td><td></td><td>Semantic matching via LLM.</td></tr><tr><td>Visual Grounding</td><td>Grounding</td><td>√</td><td></td><td></td><td>Reward=#boxes with IoU&gt;τ divided by total boxes.</td></tr><tr><td>Spatial Rec&amp;Reasoning</td><td>Spatial</td><td></td><td>√</td><td>√</td><td>Try exact matching with Sympy first. If that fails, then fall back to model judgment.</td></tr><tr><td>GUI Agents</td><td>GUI Agent</td><td>√</td><td>√</td><td></td><td>Action prediction: action+IoU; Grounding: IoU; QA: exact or semantic matching.</td></tr><tr><td>Video</td><td>Video</td><td>√</td><td>√</td><td>√</td><td>Exact matching, or semantic matching via LLM judge.</td></tr></table>
 
 loop or become excessively long, which is difficult or out-of-distribution for LLMs to extract the final answer, further undermining model-based extraction accuracy. To address these issues, we require the model during RLVR to explicitly mark the final answer with box tokens, and compare only the boxed content against the reference answer.
 
-It is worth noting that many prior works use the `\boxed{}` label to denote final answers. However, when reference answers become complex (for example, the results of GUI agent tasks are expressed as complex function calls), `\boxed{}` can be ambiguous and difficult to parse automatically. Therefore, we introduced special tokens into the vocabulary and instead mark answer spans as: `<|begin_of_box|>{FINAL_ANSWER}|<|end_of_box|>.`
+It is worth noting that many prior works use the \boxed{} label to denote final answers. However, when reference answers become complex (for example, the results of GUI agent tasks are expressed as complex function calls), \boxed{} can be ambiguous and difficult to parse automatically. Therefore, we introduced special tokens into the vocabulary and instead mark answer spans as: <|begin_of_box|>{FINAL_ANSWER}|<|end_of_box|>.
 
 Avoid reward hacking. A coarse or incomplete reward design can lead the model to discover shortcuts for boosting its reward rather than truly improving its task performance. For example, in pilot experiments, we find that after more than 500 training iterations, an imprudently designed verifier could be hacked as follows: for a counting problem, the model would answer "a correct number between 0 and 10", and for a relativity question about speed, it would answer "a velocity very close to the speed of light" - responses that successfully fool some LLM-based reward models and get high reward.
 
@@ -256,7 +300,7 @@ Domain-specific reward system. The optimal verifier varies between multimodal su
 
 For example, in chart QA, numeric answers are verified against a relative tolerance threshold; for textual answers, we first check for an exact match and, if none is found, fall back to an LLM-based semantic equivalence assessment. We summarize some of our domain-specific verifiers below, and open-source this reward system in our GitHub repository to support further academic research.
 
-Beyond the domain-specific content checking above, we also build a format-and-style-checking reward system using both rule-based and model-based judgments. In format checking, any response to non-verifiable data whose <answer> content contains the special markers <|begin_of_box|> <|end_of_box|> is penalized with a minimal reward. For style checking, we similarly assign a low reward if the <think> content or <answer> content includes extensive mixed Chinese and English segments or large blocks of repetitive text. In addition, a text-based reward
+Beyond the domain-specific content checking above, we also build a format-and-style-checking reward system using both rule-based and model-based judgments. In format checking any response to non-verifiable data whose answer> content contains the special markers <begin_of_box|> <|end_of_box|> is penalized with a minimal reward. For style checking, we similarly assign a low reward if the think> content or answer> content includes extensive mixed Chinese and English segments or large blocks of repetitive text. In addition, a text-based reward
 
 model evaluates the <answer> content for instruction compliance and fluency, encouraging outputs that adhere closely to the prompt while remaining coherent and logically rigorous.
 
@@ -278,11 +322,11 @@ To improve the performance upper bound of multimodal reinforcement learning, we 
 
 - Larger batch size. When mixing multi-domain multimodal data during training, a relatively large batch size is recommended to achieve a higher performance ceiling in the long run.
 
-- Dynamic sampling expansion via ratio EMA. In GRPO, when both entropy and KL losses are removed, a rollout batch composed entirely of correct or entirely of incorrect samples provides no useful gradient. In other words, the all-correct/incorrect prompts reduce the usable batch size. As the proportion of these all-correct or all-incorrect batches grows or fluctuates, the effective batch size can vary wildly, degrading training stability. To address this, we perform rollouts with an intentional oversampling factor expansion_ratio, and then select the subset of samples whose difficulty is most balanced (i.e., with the numbers of correct and incorrect responses as close as possible). Concretely, for each rollout, we compute the expansion ratio as expansion_ratio = 1 / (1 - not_valid_sample_rate), where not_valid_sample_rate denotes the fraction of samples that are all-correct or all-incorrect in the last iteration. We then maintain an exponential
+- Dynamic sampling expansion via ratio EMA. In GRPO, when both entropy and KL losses are removed, a rollout batch composed entirely of correct or entirely of incorrect samples provides no useful gradient. In other words, the all-correct/incorrect prompts reduce the usable batch size. As the proportion of these all-correct or all-incorrect batches grows or fluctuates, the effective batch size can vary wildly, degrading training stability. To address this, we perform rollouts with an intentional oversampling factor expansion_ratio, and then select the subset of samples whose difficulty is most balanced (i.e., with the numbers of correct and incorrect responses as close as possible). Concretely, for each rollout, we compute the expansion ratio as expansion_ratio = 1/（1- not_valid_sample_rate), where not_valid_sample_rate denotes the fraction of samples that are all-correct or all-incorrect in the last iteration. We then maintain an exponential
 
 moving average, expansion_ratio_ema, of this ratio and use it as the oversampling coefficient in the next iteration. Compared to [66], this method predetermines the total number of rollout samples, facilitating parallel sampling and balanced rollout allocation, which aligns more closely with the underlying large-scale RL infrastructure for greater efficiency.
 
-- **Force answering.** When the thinking process becomes excessively long, it may be truncated by the rollout length limit. Because the model then fails to produce an answer, it is typically assigned a reward of zero. However, such lengthy reasoning isn't necessarily incorrect — for difficult questions, the generated part of an overlong thinking path can be perfectly valid. Truncating in this way not only wastes rollout budget but also injects noise into training. To address this, we enforce a forced truncation by inserting a </think> token, which prompts the model to emit a final answer and allows us to award a fair reward for its reasoning [64]. We found that this method encourages the model to learn how to provide an appropriate answer after any amount of thinking, facilitating dynamic control of the thinking budget at test time.
+- Force answering. When the thinking process becomes excessively long, it may be truncated by the rollout length limit. Because the model then fails to produce an answer, it is typically assigned a reward of zero. However, such lengthy reasoning isn't necessarily incorrect for difficult questions, the generated part of an overlong thinking path can be perfectly valid. Truncating in this way not only wastes rollout budget but also injects noise into training. To address this, we enforce a forced truncation by inserting a </think> token, which prompts the model to emit a final answer and allows us to award a fair reward for its reasoning [64]. We found that this method encourages the model to learn how to provide an appropriate answer after any amount of thinking, facilitating dynamic control of the thinking budget at test time.
 
 - Discard KL loss. Compared to text-only models, vision-language models usually experience a faster increase in KL divergence during reinforcement learning. However, when we apply a KL loss to explicitly suppress this increase, the model's capabilities are noticeably constrained. Therefore, we remove the KL loss.
 
@@ -310,7 +354,7 @@ To enhance training robustness and prevent collapse during RL, we identified sev
 
 ## 5.4 Infrastructure
 
-To maximize RL training efficiency and performance, we extensively optimize our RL infrastructure, focusing on the following components:
+To maximize RL training efficiency and performance, we extensively optimize our RL infrastructure focusing on the following components:
 
 - Load balancing of sequence lengths across DP ranks. Since the rollout length of each sample is unknown beforehand, some ranks may be assigned many extremely long sequences (e.g., video or long-document prompts, or difficult problems with long responses). Without balancing total sequence length across DP (Data Parallel) ranks, the slowest rank dictates the overall training speed. To address this, after rollout and before assigning training samples to each DP rank, we balance both sequence length and compute load across ranks so that forward-backward passes per rank remain within a tight range, thereby maximizing throughput.
 
@@ -322,7 +366,7 @@ To maximize RL training efficiency and performance, we extensively optimize our 
 
 ## 6 Evaluation
 
-In this section, we present the evaluation details and results of GLM-4.5V (including both thinking and non-thinking modes) and GLM-4.1V-Thinking (Appendix C). In §6.1, we show the comprehensive evaluation setting and the full quantitative comparison results are listed in §6.2.
+In this section, we present the evaluation details and results of GLM-4.5V (including both thinking and non-thinking modes) and GLM-4.1V-Thinking (Appendix C). In $ \mathrm{S 6.1} $ , we show the comprehensive evaluation setting and the full quantitative comparison results are listed in $ \mathrm{S 6.2} $ .
 
 ## 6.1 Evaluation Setting
 
@@ -330,31 +374,35 @@ Benchmarks. To comprehensively assess the capabilities of our models, we conduct
 
 - General VQA: MMBench-V1.1 [30], MMStar [7], BLINK(val) [11], MUIRBENCH [53], ZeroBench(val) [39], HallusionBench [15], GeoBench [2];
 
-- **STEM:** MMMU(val) [67], MMMU Pro [68], MathVista [32], MathVision [55], MathVerse [70], DynaMath [74], LogicVista [61], WeMath [37], AI2D [26];
+- STEM: MMMU(val) [67], MMMU Pro [68], MathVista [32], MathVision [55], MathVerse [70], DynaMath [74], LogicVista [61], WeMath [37], AI2D [26];
 
-- OCR, Chart & Document: OCRBench [31], ChartQAPro [35], ChartMuseum [45], MMLongBench-Doc [34];
+- OCR,Chart & Document: OCRBench [31],ChartQAPro [35],ChartMuseum [45], MMLongBench-Doc [34];
 
 - Visual Grounding: RefCOCO-avg (val) [25], TreeBench [54], Ref-L4 [6];
 
 - GUI Agents: OSWorld [62], Android World [38], WebVoyager Some [18], Webquest-QA [56];
 
-- **Coding**: Design2Code [43], Flame-React-Eval [1];
+- **Coding:** Design2Code [43], Flame-React-Eval [1];
 
-<table><thead><tr><th>Task</th><th>Benchmark</th><th>GLM-4.1V</th><th>GLM-4.5V</th><th>GLM-4.5V</th><th>Step-3</th><th>Qwen2.5-VL</th><th>Kimi-VL-2506</th><th>Gemma-3</th></tr></thead><tbody><tr><td>Size</td><td></td><td>9B</td><td>106B (A12B)</td><td>106B (A12B)</td><td>321B (A38B)</td><td>72B</td><td>16B (A3B)</td><td>27B</td></tr><tr><td>Mode</td><td></td><td>thinking</td><td>non-thinking</td><td>thinking</td><td>thinking</td><td>non-thinking</td><td>thinking</td><td>non-thinking</td></tr><tr><td rowspan="8">General VQA</td><td>MMBench V1.1</td><td>85.8</td><td>86.7</td><td><strong>88.2</strong></td><td>81.1*</td><td>88.0</td><td>84.4</td><td>80.1*</td></tr><tr><td>MMBench V1.1 (CN)</td><td>84.7</td><td>86.5</td><td><strong>88.3</strong></td><td>81.5*</td><td>86.7*</td><td>80.7*</td><td>84.8*</td></tr><tr><td>MMStar</td><td>72.9</td><td>73.4</td><td><strong>75.3</strong></td><td>69.0*</td><td>70.8</td><td>70.4</td><td>60.0*</td></tr><tr><td>BLINK (Val)</td><td>65.1</td><td>63.7</td><td><strong>65.3</strong></td><td>62.7*</td><td>58.0*</td><td>53.5*</td><td>52.9*</td></tr><tr><td>MUIRBENCH</td><td>74.7</td><td>71.1</td><td><strong>75.3</strong></td><td>75.0*</td><td>62.9*</td><td>63.8*</td><td>50.3*</td></tr><tr><td>HallusionBench</td><td>63.2</td><td>59.1</td><td><strong>65.4</strong></td><td>64.2</td><td>56.8*</td><td>59.8*</td><td>45.8*</td></tr><tr><td>ZeroBench (sub)</td><td>19.2</td><td>21.9</td><td><strong>23.4</strong></td><td>23.0</td><td>19.5*</td><td>16.2*</td><td>17.7*</td></tr><tr><td>GeoBench¹</td><td>76.0</td><td>78.4</td><td><strong>79.7</strong></td><td>72.9*</td><td>74.3*</td><td>48.0*</td><td>57.5*</td></tr><tr><td rowspan="9">STEM</td><td>MMMU (Val)</td><td>68.0</td><td>68.4</td><td><strong>75.4</strong></td><td>74.2</td><td>70.2</td><td>64.0</td><td>62.0*</td></tr><tr><td>MMMU Pro</td><td>57.1</td><td>59.8</td><td><strong>65.2</strong></td><td>58.6</td><td>51.1</td><td>46.3</td><td>37.4*</td></tr><tr><td>MathVista</td><td>80.7</td><td>78.2</td><td><strong>84.6</strong></td><td>79.2*</td><td>74.8</td><td>80.1</td><td>64.3*</td></tr><tr><td>MathVision</td><td>54.4</td><td>52.5</td><td><strong>65.6</strong></td><td>64.8</td><td>38.1</td><td>54.4*</td><td>39.8*</td></tr><tr><td>MathVerse</td><td>68.4</td><td>65.4</td><td><strong>72.1</strong></td><td>62.7*</td><td>47.8*</td><td>54.6*</td><td>34.0*</td></tr><tr><td>DynaMath</td><td>42.5</td><td>44.1</td><td><strong>53.9</strong></td><td>50.1</td><td>36.1*</td><td>28.1*</td><td>28.5*</td></tr><tr><td>LogicVista</td><td>60.4</td><td>54.8</td><td><strong>62.4</strong></td><td>60.2*</td><td>56.2*</td><td>51.4*</td><td>47.3*</td></tr><tr><td>AI2D</td><td>87.9</td><td>86.6</td><td><strong>88.1</strong></td><td>83.7*</td><td>87.6*</td><td>81.9*</td><td>80.2*</td></tr><tr><td>WeMath</td><td>63.8</td><td>58.9</td><td><strong>68.8</strong></td><td>59.8</td><td>46.0*</td><td>42.0*</td><td>37.9*</td></tr><tr><td rowspan="4">Long Document, OCR &amp; Chart</td><td>MMLongBench-Doc</td><td>42.4</td><td>41.1</td><td><strong>44.7</strong></td><td>31.8*</td><td>35.2*</td><td>42.1</td><td>28.4*</td></tr><tr><td>OCRBench</td><td>84.2</td><td><strong>87.2</strong></td><td>86.5</td><td>83.7*</td><td>85.1*</td><td>86.9</td><td>75.9*</td></tr><tr><td>ChartQAPro</td><td>59.5</td><td>54.2</td><td><strong>64.0</strong></td><td>56.4*</td><td>46.7*</td><td>23.7*</td><td>37.6*</td></tr><tr><td>ChartMuseum</td><td>48.8</td><td>47.1</td><td><strong>55.3</strong></td><td>40.0*</td><td>39.6*</td><td>33.6*</td><td>23.9*</td></tr><tr><td rowspan="3">Visual Grounding</td><td>RefCOCO-avg (val)</td><td>85.3</td><td><strong>91.5</strong></td><td>91.3</td><td>20.2*</td><td>90.3</td><td>33.6*</td><td>2.4*</td></tr><tr><td>TreeBench</td><td>37.5</td><td>47.9</td><td><strong>50.1</strong></td><td>41.3*</td><td>42.3</td><td>41.5*</td><td>33.8*</td></tr><tr><td>Ref-L4-test</td><td>86.8</td><td><strong>89.5</strong></td><td><strong>89.5</strong></td><td>12.2*</td><td>80.8*</td><td>51.3*</td><td>2.5*</td></tr><tr><td rowspan="4">Spatial Reco &amp; Reasoning</td><td>OmniSpatial</td><td>47.7</td><td>49.6</td><td><strong>51.0</strong></td><td>47.0*</td><td>47.9</td><td>37.3*</td><td>40.8*</td></tr><tr><td>CV-Bench</td><td>85.0</td><td>86.5</td><td><strong>87.3</strong></td><td>80.9*</td><td>82.0*</td><td>79.1*</td><td>74.6*</td></tr><tr><td>ERQA</td><td>45.8</td><td>46.5</td><td><strong>50.0</strong></td><td>44.5*</td><td>44.8*</td><td>36.0*</td><td>37.5*</td></tr><tr><td>All-Angles Bench</td><td>52.7</td><td>54.3</td><td><strong>56.9</strong></td><td>52.4*</td><td>54.4*</td><td>48.9*</td><td>48.2*</td></tr><tr><td rowspan="5">GUI Agents</td><td>OSWorld²</td><td>14.9</td><td>31.8</td><td><strong>35.8</strong></td><td>-</td><td>8.8</td><td>8.2</td><td>6.2*</td></tr><tr><td>AndroidWorld</td><td>41.7</td><td><strong>57.0</strong></td><td><strong>57.0</strong></td><td>-</td><td>35.0</td><td>-</td><td>4.4*</td></tr><tr><td>WebVoyager²</td><td>69.0</td><td>75.9</td><td><strong>84.4</strong></td><td>-</td><td>40.4*</td><td>-</td><td>34.8*</td></tr><tr><td>Webquest-SingleQA</td><td>72.1</td><td>73.3</td><td><strong>76.9</strong></td><td>58.7*</td><td>60.5*</td><td>35.6*</td><td>31.2*</td></tr><tr><td>Webquest-MultiQA</td><td>54.7</td><td>53.8</td><td><strong>60.6</strong></td><td>52.8*</td><td>52.1*</td><td>11.1*</td><td>36.5*</td></tr><tr><td rowspan="2">Coding</td><td>Design2Code</td><td>64.7</td><td><strong>84.5</strong></td><td>82.2</td><td>34.1*</td><td>41.9*</td><td>38.8*</td><td>16.1*</td></tr><tr><td>Flame-React-Eval</td><td>72.5</td><td>78.8</td><td><strong>82.5</strong></td><td>63.8*</td><td>46.3*</td><td>36.3*</td><td>27.5*</td></tr><tr><td rowspan="7">Video Understanding</td><td>VideoMME (w/o sub)</td><td>68.2</td><td>74.3</td><td><strong>74.6</strong></td><td>-</td><td>73.3</td><td>67.8</td><td>58.9*</td></tr><tr><td>VideoMME (w/sub)</td><td>73.6</td><td>80.0</td><td><strong>80.7</strong></td><td>-</td><td>79.1</td><td>71.9</td><td>68.4*</td></tr><tr><td>MMVU</td><td>59.4</td><td>64.8</td><td><strong>68.7</strong></td><td>-</td><td>62.9</td><td>57.5</td><td>57.7*</td></tr><tr><td>VideoMMMU</td><td>61.0</td><td>67.5</td><td><strong>72.4</strong></td><td>-</td><td>60.2</td><td>65.2</td><td>54.5*</td></tr><tr><td>LVBench</td><td>44.0</td><td><strong>56.2</strong></td><td>53.8</td><td>-</td><td>47.3</td><td>47.6*</td><td>45.9*</td></tr><tr><td>MotionBench</td><td>59.0</td><td>61.8</td><td><strong>62.4</strong></td><td>-</td><td>56.1*</td><td>54.3*</td><td>47.8*</td></tr><tr><td>MVBench</td><td>68.4</td><td><strong>73.4</strong></td><td>73.0</td><td>-</td><td>70.4</td><td>59.7*</td><td>43.5*</td></tr></tbody></table>
+<table border="1"><tr><td>Task</td><td>Benchmark</td><td>GLM-4.1V</td><td>GLM-4.5V</td><td>GLM-4.5V</td><td>Step-3</td><td>Qwen2.5-VL</td><td>Kimi-VL-2506</td><td>Gemma-3</td></tr><tr><td>Size Mode</td><td></td><td>9B thinking</td><td>106B(A12B) non-thinking</td><td>106B(A12B) thinking</td><td>321B(A38B) thinking</td><td>72B non-thinking</td><td>16B(A3B) thinking</td><td>27B non-thinking</td></tr><tr><td rowspan="9">General VQA</td><td>MMBenchV1.1</td><td>85.8</td><td>86.7</td><td>88.2</td><td>81.1*</td><td>88.0</td><td>84.4</td><td>80.1*</td></tr><tr><td>MMBenchV1.1(CN)</td><td>84.7</td><td>86.5</td><td>88.3</td><td>81.5*</td><td>86.7*</td><td>80.7*</td><td>84.8*</td></tr><tr><td>MMStar</td><td>72.9</td><td>73.4</td><td>75.3</td><td>69.0*</td><td>70.8</td><td>70.4</td><td>60.0*</td></tr><tr><td>BLINK(Val)</td><td>65.1</td><td>63.7</td><td>65.3</td><td>62.7*</td><td>58.0*</td><td>53.5*</td><td>52.9*</td></tr><tr><td>MUIRBENCH</td><td>74.7</td><td>71.1</td><td>75.3</td><td>75.0*</td><td>62.9*</td><td>63.8*</td><td>50.3*</td></tr><tr><td>HallusionBench</td><td>63.2</td><td>59.1</td><td>65.4</td><td>64.2</td><td>56.8*</td><td>59.8*</td><td>45.8*</td></tr><tr><td>ZeroBench(sub)</td><td>19.2</td><td>21.9</td><td>23.4</td><td>23.0</td><td>19.5*</td><td>16.2*</td><td>17.7*</td></tr><tr><td>GeoBench1</td><td>76.0</td><td>78.4</td><td>79.7</td><td>72.9*</td><td>74.3*</td><td>48.0*</td><td>57.5*</td></tr><tr><td rowspan="9">STEM</td><td>MMMU(Val)</td><td>68.0</td><td>68.4</td><td>75.4</td><td>74.2</td><td>70.2</td><td>64.0</td><td>62.0*</td></tr><tr><td>MMMUPro</td><td>57.1</td><td>59.8</td><td>65.2</td><td>58.6</td><td>51.1</td><td>46.3</td><td>37.4*</td></tr><tr><td>MathVista</td><td>80.7</td><td>78.2</td><td>84.6</td><td>79.2*</td><td>74.8</td><td>80.1</td><td>64.3*</td></tr><tr><td>MathVision</td><td>54.4</td><td>52.5</td><td>65.6</td><td>64.8</td><td>38.1</td><td>54.4*</td><td>39.8*</td></tr><tr><td>MathVerse</td><td>68.4</td><td>65.4</td><td>72.1</td><td>62.7*</td><td>47.8*</td><td>54.6*</td><td>34.0*</td></tr><tr><td>DynaMath</td><td>42.5</td><td>44.1</td><td>53.9</td><td>50.1</td><td>36.1*</td><td>28.1*</td><td>28.5*</td></tr><tr><td>LogicVista</td><td>60.4</td><td>54.8</td><td>62.4</td><td>60.2*</td><td>56.2*</td><td>51.4*</td><td>47.3*</td></tr><tr><td>AI2D</td><td>87.9</td><td>86.6</td><td>88.1</td><td>83.7*</td><td>87.6*</td><td>81.9*</td><td>80.2*</td></tr><tr><td>WeMath</td><td>63.8</td><td>58.9</td><td>68.8</td><td>59.8</td><td>46.0*</td><td>42.0*</td><td>37.9*</td></tr><tr><td rowspan="4">Long Document, OCR&amp;Chart</td><td>MMLongBench-Doc</td><td>42.4</td><td>41.1</td><td>44.7</td><td>31.8*</td><td>35.2*</td><td>42.1</td><td>28.4*</td></tr><tr><td>OCRBench</td><td>84.2</td><td>87.2</td><td>86.5</td><td>83.7*</td><td>85.1*</td><td>86.9</td><td>75.9*</td></tr><tr><td>ChartQAPro</td><td>59.5</td><td>54.2</td><td>64.0</td><td>56.4*</td><td>46.7*</td><td>23.7*</td><td>37.6*</td></tr><tr><td>ChartMuseum</td><td>48.8</td><td>47.1</td><td>55.3</td><td>40.0*</td><td>39.6*</td><td>33.6*</td><td>23.9*</td></tr><tr><td rowspan="3">Visual Grounding</td><td>RefCOCO-avg(val)</td><td>85.3</td><td>91.5</td><td>91.3</td><td>20.2*</td><td>90.3</td><td>33.6*</td><td>2.4*</td></tr><tr><td>TreeBench</td><td>37.5</td><td>47.9</td><td>50.1</td><td>41.3*</td><td>42.3</td><td>41.5*</td><td>33.8*</td></tr><tr><td>Ref-L4-test</td><td>86.8</td><td>89.5</td><td>89.5</td><td>12.2*</td><td>80.8*</td><td>51.3*</td><td>2.5*</td></tr><tr><td rowspan="4">Spatial Reco&amp;Reasoning</td><td>OmniSpatial</td><td>47.7</td><td>49.6</td><td>51.0</td><td>47.0*</td><td>47.9</td><td>37.3*</td><td>40.8*</td></tr><tr><td>CV-Bench</td><td>85.0</td><td>86.5</td><td>87.3</td><td>80.9*</td><td>82.0*</td><td>79.1*</td><td>74.6*</td></tr><tr><td>ERQA</td><td>45.8</td><td>46.5</td><td>50.0</td><td>44.5*</td><td>44.8*</td><td>36.0*</td><td>37.5*</td></tr><tr><td>All-Angles Bench</td><td>52.7</td><td>54.3</td><td>56.9</td><td>52.4*</td><td>54.4*</td><td>48.9*</td><td>48.2*</td></tr><tr><td rowspan="5">GUI Agents</td><td>OSWorld2</td><td>14.9</td><td>31.8</td><td>35.8</td><td>-</td><td>8.8</td><td>8.2</td><td>6.2*</td></tr><tr><td>AndroidWorld</td><td>41.7</td><td>57.0</td><td>57.0</td><td>-</td><td>35.0</td><td>-</td><td>4.4*</td></tr><tr><td>WebVoyager2</td><td>69.0</td><td>75.9</td><td>84.4</td><td>-</td><td>40.4*</td><td>-</td><td>34.8*</td></tr><tr><td>Webquest-SingleQA</td><td>72.1</td><td>73.3</td><td>76.9</td><td>58.7*</td><td>60.5*</td><td>35.6*</td><td>31.2*</td></tr><tr><td>Webquest-MultiQA</td><td>54.7</td><td>53.8</td><td>60.6</td><td>52.8*</td><td>52.1*</td><td>11.1*</td><td>36.5*</td></tr><tr><td rowspan="2">Coding</td><td>Design2Code</td><td>64.7</td><td>84.5</td><td>82.2</td><td>34.1*</td><td>41.9*</td><td>38.8*</td><td>16.1*</td></tr><tr><td>Flame-React-Eval</td><td>72.5</td><td>78.8</td><td>82.5</td><td>63.8*</td><td>46.3*</td><td>36.3*</td><td>27.5*</td></tr><tr><td rowspan="7">Video Understanding</td><td>VideoMME(w/o sub)</td><td>68.2</td><td>74.3</td><td>74.6</td><td>-</td><td>73.3</td><td>67.8</td><td>58.9*</td></tr><tr><td>VideoMME(w/sub)</td><td>73.6</td><td>80.0</td><td>80.7</td><td>-</td><td>79.1</td><td>71.9</td><td>68.4*</td></tr><tr><td>MMVU</td><td>59.4</td><td>64.8</td><td>68.7</td><td>-</td><td>62.9</td><td>57.5</td><td>57.7*</td></tr><tr><td>VideoMMMU</td><td>61.0</td><td>67.5</td><td>72.4</td><td>-</td><td>60.2</td><td>65.2</td><td>54.5*</td></tr><tr><td>LVBench</td><td>44.0</td><td>56.2</td><td>53.8</td><td>-</td><td>47.3</td><td>47.6*</td><td>45.9*</td></tr><tr><td>MotionBench</td><td>59.0</td><td>61.8</td><td>62.4</td><td>-</td><td>56.1*</td><td>54.3*</td><td>47.8*</td></tr><tr><td>MVBench</td><td>68.4</td><td>73.4</td><td>73.0</td><td>-</td><td>70.4</td><td>59.7*</td><td>43.5*</td></tr></table>
 
-Table 2: Benchmark evaluation of GLM-4.5V, GLM-4.1V-Thinking and other open-sourced VLMs on diverse visual-language benchmarks. Results marked with " \* \* " correspond to our reproduced results, "-" indicates the corresponding models are not competent for such tasks or datasets, while those labeled with " † " are reported by third-party sources. The best results among open-source models are bolded. Refer to Table 3 for the detailed comparison of GLM-4.1V-9B-Thinking with baselines under 10B parameters.
+<div align="center">
+
+Table 2: Benchmark evaluation of GLM-4.5V, GLM-4.1V-Thinking and other open-sourced VLMs on diverse visual-language benchmarks. Results marked with " $ \cdot $ " correspond to our reproduced results, " - " indicates the corresponding models are not competent for such tasks or datasets, while those labeled with " $ \dagger $ " are reported by third-party sources. The best results among open-source models are bolded. Refer to Table 3 for the detailed comparison of GLM-4.1V-9B-Thinking with baselines under 10B parameters.
+
+</div>
 
 - Spatial Reco & Reasoning: OminiSpatial [24], CV-Bench [51], ERQA [49], All-Angles Bench [65];
 
 - Video Understanding: VideoMME [10], MMVU [71], VideoMMMU [22], LVBench [58], MotionBench [19], MVBench [28];
 
-Setting. We mostly use vLLM $ ^{1} $ as the backend for model inference. For faster and more stable inference, we use SGLang $ ^{2} $ for video inference. The maximum output length for each model response is set to 8,192 tokens. For visual input configuration, we set the maximum expected length for image inputs to 6,144 tokens, and 48,000 tokens for video benchmarks. The predicted answer is extracted as the string enclosed within special boxed tokens (<|begin_of_box|>...<|end_of_box|>), which we define as the model's final output. For benchmarks that require answer extraction or scoring by a language model, we consistently use GPT-4o (2024-11-20) [36] for this purpose. To ensure fairness, all models—including GLM-4.1V-9B-Thinking and its open-source counterparts—are evaluated using the same toolchain, policies, and prompt templates. For each model, we enforce a minimum successful request rate of 95% on every benchmark. Samples that fail due to generation errors or API issues are excluded from scoring, ensuring that final metrics reflect only valid outputs.
+Setting. We mostly use vLLM as the backend for model inference. For faster and more stable inference, we use SGLang for video inference. The maximum output length for each model response is set to 8,192 tokens. For visual input configuration, we set the maximum expected length for image inputs to 6,144 tokens, and 48,000 tokens for video benchmarks. The predicted answer is extracted as the string enclosed within special boxed tokens ( $ < | \mathrm{b e g i n\_o f\_b o x} | >... < | \mathrm{e n d\_o f\_b o x} | > $ ), which we define as the model's final output. For benchmarks that require answer extraction or scoring by a language model, we consistently use GPT-4o (2024-11-20) [36] for this purpose. To ensure fairness, all models—including GLM-4.1V-9B-Thinking and its open-source counterparts—are evaluated using the same toolchain, policies, and prompt templates. For each model, we enforce a minimum successful request rate of 95% on every benchmark. Samples that fail due to generation errors or API issues are excluded from scoring, ensuring that final metrics reflect only valid outputs.
 
-Evaluation protocol and instructions. We detail the evaluation protocols for VLM coding, GUI agents, and grounding in Appendix B as these tasks may involve domain-specific formats, instructions, and evaluation protocols.
+Evaluation protocol and instructions. We detail the evaluation protocols for VLM coding, GUI agents, and grounding in Appendix B, as these tasks may involve domain-specific formats, instructions, and evaluation protocols.
 
 ## 6.2 Comparison to Other Advanced MLLMs
 
-We compare GLM-4.5V and GLM-4.1V-9B-Thinking against a wide range of open-source state-of-the-art MLLMs, including Step-3 [52], Qwen-VL series [4], Kimi-VL [50] and Gemma-3 [48]. As shown in Table 2, GLM-4.5V establishes a new state-of-the-art among open-source models across all benchmarks, demonstrating consistent superiority in performance across a wide spectrum of multimodal tasks.
+We compare GLM-4.5V and GLM-4.1V-9B-Thinking against a wide range of open-source state-of the-art MLLMs, including Step-3 [52], Qwen-VL series [4], Kimi-VL [50] and Gemma-3 [48]. As shown in Table 2, GLM-4.5V establishes a new state-of-the-art among open-source models across all benchmarks, demonstrating consistent superiority in performance across a wide spectrum of multimodal tasks.
 
 In the domain of General VQA, GLM-4.5V-Thinking surpasses all competing open-source models of comparable size on diverse benchmarks, covering both single-image and multi-image settings. This underscores the model's strong general-purpose visual reasoning capabilities and its adeptness in both factual and inferential question answering across varying visual contexts.
 
@@ -386,7 +434,11 @@ GLM-4.1V-Thinking and GLM-4.5V represent our firm steps in pursuit of general-pu
 
 ![Image 17-12](imgs/cropped_page17_idx12.jpg)
 
+<div align="center">
+
 Figure 6: Cross-domain generalization in reinforcement learning. We evaluate the SFT-stage models across five RL data settings: STEM, OCR & Chart, grounding, GUI agent, and a combined "Mix-all". Each model is tested on five benchmark suites corresponding to these domains. The values in the grid show the average performance improvement per domain (negative values indicate a decline), and the cell colors are normalized within each domain.
+
+</div>
 
 learn to reason across visual, textual, mathematical, scientific, and agentic domains. The resulting 9B-parameter dense model and 106B A12B-parameter MoE model achieve strong performance across diverse benchmarks, achieving SOTA performance among models of comparable size. We open-source GLM-4.1V-Thinking and GLM-4.5V to facilitate further research in the direction of multimodal reasoning.
 
@@ -426,9 +478,9 @@ Peng Zhang, Debing Liu, Bin Xu, Juanzi Li, Minlie Huang, Yuxiao Dong, Jie Tang
 
 ## References
 
-[1] Flame-code-vlm. https://github.com/Flame-Code-VLM/Flame-Code-VLM
+[1] Flame-code-vlm. https://github.com/Flame-Code-VLM/Flame-Code-VLM.
 
-[2] Geobench. https://github.com/ccmdi/geobench
+[2] Geobench. https://github.com/ccmdi/geobench.
 
 [3] A. Awadalla, L. Xue, O. Lo, M. Shu, H. Lee, E. Guha, S. Shen, M. Awadalla, S. Savarese, C. Xiong, et al. Mint-1t: Scaling open-source multimodal data by 10x: A multimodal dataset with one trillion tokens. Advances in Neural Information Processing Systems, 37:36805-36828, 2024.
 
@@ -484,7 +536,7 @@ Peng Zhang, Debing Liu, Bin Xu, Juanzi Li, Minlie Huang, Yuxiao Dong, Jie Tang
 
 [29] Q. Li, Z. Chen, W. Wang, W. Wang, S. Ye, Z. Jin, G. Chen, Y. He, Z. Gao, E. Cui, et al. Omnicorpus: A unified multimodal corpus of 10 billion-level images interleaved with text. arXiv preprint arXiv:2406.08418, 2024.
 
-[30] Y. Liu, H. Duan, Y. Zhang, B. Li, S. Zhang, W. Zhao, Y. Yuan, J. Wang, C. He, Z. Liu, K. Chen, and D. Lin. Mmbench: Is your multi-modal model an all-around player? arXiv:2307.06281, 2023.
+[30] Y. Liu, H. Duan, Y. Zhang, B. Li, S. Zhang, W. Zhao, Y. Yuan, J. Wang, C. He, Z. Liu, K. Chen, and D. Lin. Mmbench: Is your multi-modal model an all-around player? arXiv:2307.06281 2023.
 
 [31] Y. Liu, Z. Li, M. Huang, B. Yang, W. Yu, C. Li, X.-C. Yin, C.-L. Liu, L. Jin, and X. Bai. Ocrbench: on the hidden mystery of ocr in large multimodal models. Science China Information Sciences, 67(12), Dec. 2024.
 
@@ -504,7 +556,7 @@ Peng Zhang, Debing Liu, Bin Xu, Juanzi Li, Minlie Huang, Yuxiao Dong, Jie Tang
 
 [39] J. Roberts, M. R. Taesiri, A. Sharma, A. Gupta, S. Roberts, I. Croitoru, S.-V. Bogolin, J. Tang, F. Langer, V. Raina, et al. Zerobench: An impossible visual benchmark for contemporary large multimodal models. arXiv preprint arXiv:2502.09696, 2025.
 
-[40] C. Schuhmann, R. Beaumont, R. Vencu, C. Gordon, R. Wightman, M. Cherti, T. Coombes, A. Katta, C. Mullis, M. Wortsman, et al. Laion-5b: An open large-scale dataset for training next generation image-text models. Advances in neural information processing systems, 35:25278-25294, 2022.
+[40] C. Schuhmann, R. Beaumont, R. Vencu, C. Gordon, R. Wightman, M. Cherti, T. Coombes, A. Katta, C. Mullis, M. Wortsman, et al. Laion-5b: An open large-scale dataset for training next generation image-text models. Advances in neural information processing systems, 35:25278 25294, 2022.
 
 [41] R. Shao, S. S. Li, R. Xin, S. Geng, Y. Wang, S. Oh, S. S. Du, N. Lambert, S. Min, R. Krishna, et al. Spurious rewards: Rethinking training signals in rlvr. arXiv preprint arXiv:2506.10947, 2025.
 
@@ -520,9 +572,9 @@ Peng Zhang, Debing Liu, Bin Xu, Juanzi Li, Minlie Huang, Yuxiao Dong, Jie Tang
 
 [47] G. Team, R. Anil, S. Borgeaud, Y. Wu, J.-B. Alayrac, J. Yu, R. Soricut, J. Schalkwyk, A. M. Dai, A. Hauth, K. Millican, D. Silver, S. Petrov, M. Johnson, I. Antonoglou, J. Schrittwieser, A. Glaese, J. Chen, E. Pitler, T. Lillicrap, A. Lazaridou, O. Firat, J. Molloy, M. Isard, P. R. Barham, T. Hennigan, B. Lee, F. Viola, M. Reynolds, Y. Xu, R. Doherty, E. Collins, C. Meyer, E. Rutherford, E. Moreira, K. Ayoub, M. Goel, G. Tucker, E. Piqueras, M. Krikun, I. Barr, N. Savinov, I. Danihelka, B. Roelofs, A. White, A. Andreassen, T. von Glehn, L. Yagati, M. Kazemi, L. Gonzalez, M. Khalman, J. Sygnowski, A. Frechette, C. Smith, L. Culp, L. Proleev, Y. Luan, X. Chen, J. Lottes, N. Schucher, F. Lebron, A. Rrustemi, N. Clay, P. Crone, T. Kocisky, J. Zhao, B. Perz, D. Yu, H. Howard, A. Bloniarz, J. W. Rae, H. Lu, L. Sifre, M. Maggioni, F. Alcober, D. Garrette, M. Barnes, S. Thakoor, J. Austin, G. Barth-Maron, W. Wong, R. Joshi, R. Chaabouni, D. Fatiha, A. Ahuja, R. Liu, Y. Li, S. Cogan, J. Chen, C. Jia, C. Gu, Q. Zhang, J. Grimstad, A. J. Hartman, M. Chadwick, G. S. Tomar, X. Garcia, E. Senter, E. Taropa, T. S. Pillai, J. Devlin, M. Laskin, D. de Las Casas, D. Valter, C. Tao, L. Blanco, A. P.
 
-Badia, D. Reitter, M. Chen, J. Brennan, C. Rivera, S. Brin, S. Iqbal, G. Surita, J. Labanowski, A. Rao, S. Winkler, E. Parisotto, Y. Gu, K. Olszewska, Y. Zhang, R. Addanki, A. Miech, A. Louis, L. E. Shafey, D. Teplyashin, G. Brown, E. Catt, N. Attaluri, J. Balaguer, J. Xiang, P. Wang, Z. Ashwood, A. Briukhov, A. Webson, S. Ganapathy, S. Sanghavi, A. Kannan, M.-W. Chang, A. Stjerngren, J. Djolonga, Y. Sun, A. Bapna, M. Aitchison, P. Pejman, H. Michalewski, T. Yu, C. Wang, J. Love, J. Ahn, D. Bloxwich, K. Han, P. Humphreys, T. Sellam, J. Bradbury, V. Godbole, S. Samangooei, B. Damoc, A. Kaskasoli, S. M. R. Arnold, V. Vasudevan, S. Agrawal, J. Riesa, D. Lepikhin, R. Tanburn, S. Srinivasan, H. Lim, S. Hodkinson, P. Shyam, J. Ferret, S. Hand, A. Garg, T. L. Paine, J. Li, Y. Li, M. Giang, A. Neitz, Z. Abbas, S. York, M. Reid, E. Cole, A. Chowdhery, D. Das, D. Rogozińska, V. Nikolaev, P. Sprechmann, Z. Nado, L. Zilka, F. Prost, L. He, M. Monteiro, G. Mishra, C. Welty, J. Newlan, D. Jia, M. Allamanis, C. H. Hu, R. de Liedekerke, J. Gilmer, C. Saroufim, S. Rijhwani, S. Hou, D. Shrivastava, A. Baddepudi, A. Goldin, A. Ozturel, A. Cassirer, Y. Xu, D. Sohn, D. Sachan, R. K. Amplayo, C. Swanson, D. Petrova, S. Narayan, A. Guez, S. Brahma, J. Landon, M. Patel, R. Zhao, K. Villela, L. Wang, W. Jia, M. Rahtz, M. Giménez, L. Yeung, H. Lin, J. Keeling, P. Georgiev, D. Mincu, B. Wu, S. Haykal, R. Saputro, K. Vodrahalli, J. Qin, Z. Cankara, A. Sharma, N. Fernando, W. Hawkins, B. Neyshabur, S. Kim, A. Hutter, P. Agrawal, A. Castro-Ros, G. van den Driessche, T. Wang, F. Yang, S. yiin Chang, P. Komarek, R. McIlroy, M. Lučić, G. Zhang, W. Farhan, M. Sharman, P. Natsev, P. Michel, Y. Cheng, Y. Bansal, S. Qiao, K. Cao, S. Shakeri, C. Butterfield, J. Chung, P. K. Rubenstein, S. Agrawal, A. Mensch, K. Soparkar, K. Lenc, T. Chung, A. Pope, L. Maggiore, J. Kay, P. Jhakra, S. Wang, J. Maynez, M. Phuong, T. Tobin, A. Tacchetti, M. Trebacz, K. Robinson, Y. Katariya, S. Riedel, P. Bailey, K. Xiao, N. Ghelani, L. Aroyo, A. Slone, N. Houlsby, X. Xiong, Z. Yang, E. Gribovskaya, J. Adler, M. Wirth, L. Lee, M. Li, T. Kagohara, J. Pavagadhi, S. Bridgers, A. Bortsova, S. Ghemawat, Z. Ahmed, T. Liu, R. Powell, V. Bolina, M. Iinuma, P. Zablotskaia, J. Besley, D.-W. Chung, T. Dozat, R. Comanescu, X. Si, J. Greer, G. Su, M. Polacek, R. L. Kaufman, S. Tokumine, H. Hu, E. Buchatskaya, Y. Miao, M. Elhawaty, A. Siddhant, N. Tomasev, J. Xing, C. Greer, H. Miller, S. Ashraf, A. Roy, Z. Zhang, A. Ma, A. Filos, M. Besta, R. Blevins, T. Klimenko, C.-K. Yeh, S. Changpinyo, J. Mu, O. Chang, M. Pajarskas, C. Muir, V. Cohen, C. L. Lan, K. Haridasan, A. Marathe, S. Hansen, S. Douglas, R. Samuel, M. Wang, S. Austin, C. Lan, J. Jiang, J. Chiu, J. A. Lorenzo, L. L. Sjösund, S. Cevey, Z. Gleicher, T. Avrahami, A. Boral, H. Srinivasan, V. Selo, R. May, K. Aisopos, L. Hussenot, L. B. Soares, K. Baumli, M. B. Chang, A. Recasens, B. Caine, A. Pritzel, F. Pavetic, F. Pardo, A. Gergely, J. Frye, V. Ramasesh, D. Horgan, K. Badola, N. Kassner, S. Roy, E. Dyer, V. Campos, A. Tomala, Y. Tang, D. E. Badawy, E. White, B. Mustafa, O. Lang, A. Jindal, S. Vikram, Z. Gong, S. Caelles, R. Hemsley, G. Thornton, F. Feng, W. Stokowiec, C. Zheng, P. Thacker, Çağlar Ünlü, Z. Zhang, M. Saleh, J. Svensson, M. Bileschi, P. Patil, A. Anand, R. Ring, K. Tsihlas, A. Vezer, M. Selvi, T. Shevlane, M. Rodriguez, T. Kwiatkowski, S. Daruki, K. Rong, A. Dafoe, N. FitzGerald, K. Gu-Lemberg, M. Khan, L. A. Hendricks, M. Pellat, V. Feinberg, J. Cobon-Kerr, T. Sainath, M. Rauh, S. H. Hashemi, R. Ives, Y. Hasson, Y. Li, E. Noland, Y. Cao, N. Byrd, L. Hou, Q. Wang, T. Sottiaux, M. Paganini, J.-B. Lespiau, A. Moufarek, S. Hassan, K. Shivakumar, J. van Amersfoort, A. Mandhane, P. Joshi, A. Goyal, M. Tung, A. Brock, H. Sheahan, V. Misra, C. Li, N. Rakičević, M. Dehghani, F. Liu, S. Mittal, J. Oh, S. Noury, E. Sezener, F. Huot, M. Lamm, N. D. Cao, C. Chen, G. Elsayed, E. Chi, M. Mahdieh, I. Tenney, N. Hua, I. Petrychenko, P. Kane, D. Scandinaro, R. Jain, J. Uesato, R. Datta, A. Sadovsky, O. Bunyan, D. Rabiej, S. Wu, J. Zhang, G. Vasudevan, E. Leurent, M. Alnahlawi, I. Georgescu, N. Wei, I. Zheng, B. Chan, P. G. Rabinovitch, P. Stanczyk, Y. Zhang, D. Steiner, S. Naskar, M. Azzam, M. Johnson, A. Paszke, C.-C. Chiu, J. S. Elias, A. Mohiuddin, F. Muhammad, J. Miao, A. Lee, N. Vieillard, S. Potluri, J. Park, E. Davoodi, J. Zhang, J. Stanway, D. Garmon, A. Karmarkar, Z. Dong, J. Lee, A. Kumar, L. Zhou, J. Evens, W. Isaac, Z. Chen, J. Jia, A. Levskaya, Z. Zhu, C. Gorgolewski, P. Grabowski, Y. Mao, A. Magni, K. Yao, J. Snaider, N. Casagrande, P. Suganthan, E. Palmer, G. Irving, E. Loper, M. Faruqui, I. Arkatkar, N. Chen, I. Shafran, M. Fink, A. Castano, I. Giannoumis, W. Kim, M. Rybiński, A. Sreevatsa, J. Prendki, D. Soergel, A. Goedeckemeyer, W. Gierke, M. Jafari, M. Gaba, J. Wiesner, D. G. Wright, Y. Wei, H. Vashisht, Y. Kulizhskaya, J. Hoover, M. Le, L. Li, C. Iwuanyanwu, L. Liu, K. Ramirez, A. Khorlin, A. Cui, T. LIN, M. Georgiev, M. Wu, R. Aguilar, K. Pallo, A. Chakladar, A. Repina, X. Wu, T. van der Weide, P. Ponnapalli, C. Kaplan, J. Simsa, S. Li, O. Dousse, F. Yang, J. Piper, N. Ie, M. Lui, R. Pasumarthi, N. Lintz, A. Vijayakumar, L. N. Thiet, D. Andor, P. Valenzuela, C. Paduraru, D. Peng, K. Lee, S. Zhang, S. Greene, D. D. Nguyen, P. Kurylowicz, S. Velurv, S. Krause, C. Hardin, L. Dixon, L. Janzer, K. Choo, Z. Feng, B. Zhang, A. Singhal.
+Badia, D. Reitter, M. Chen, J. Brennan, C. Rivera, S. Brin, S. Iqbal, G. Surita, J. Labanowski, A. Rao, S. Winkler, E. Parisotto, Y. Gu, K. Olszewska, Y. Zhang, R. Addanki, A. Miech, A. Louis, L. E. Shafey, D. Teplyashin, G. Brown, E. Catt, N. Attaluri, J. Balaguer, J. Xiang, P. Wang, Z. Ashwood, A. Briukhov, A. Webson, S. Ganapathy, S. Sanghavi, A. Kannan, M.-W. Chang, A. Stjerngren, J. Djolonga, Y. Sun, A. Bapna, M. Aitchison, P. Pejman, H. Michalewski, T. Yu, C. Wang, J. Love, J. Ahn, D. Bloxwich, K. Han, P. Humphreys, T. Sellam, J. Bradbury, V. Godbole, S. Samangooei, B. Damoc, A. Kaskasoli, S. M. R. Arnold, V. Vasudevan, S. Agrawal, J. Riesa, D. Lepikhin, R. Tanburn, S. Srinivasan, H. Lim, S. Hodkinson, P. Shyam, J. Ferret, S. Hand, A. Garg, T. L. Paine, J. Li, Y. Li, M. Giang, A. Neitz, Z. Abbas, S. York, M. Reid, E. Cole, A. Chowdhery, D. Das, D. Rogozińska, V. Nikolaev, P. Sprechmann, Z. Nado, L. Zilka, F. Prost, L. He, M. Monteiro, G. Mishra, C. Welty, J. Newlan, D. Jia, M. Allamanis, C. H. Hu, R. de Liedekerke, J. Gilmer, C. Saroufim, S. Rijhwani, S. Hou, D. Shrivastava, A. Baddepudi, A. Goldin, A. Ozturel, A. Cassirer, Y. Xu, D. Sohn, D. Sachan, R. K. Amplayo, C. Swanson, D. Petrova, S. Narayan, A. Guez, S. Brahma, J. Landon, M. Patel, R. Zhao, K. Villela, L. Wang, W. Jia, M. Rahtz, M. Giménez, L. Yeung, H. Lin, J. Keeling, P. Georgiev, D. Mincu, B. Wu, S. Haykal, R. Saputro, K. Vodrahalli, J. Qin, Z. Cankara, A. Sharma, N. Fernando, W. Hawkins, B. Neyshabur, S. Kim, A. Hutter, P. Agrawal, A. Castro-Ros, G. van den Driessche, T. Wang, F. Yang, S. yiin Chang, P. Komarek, R. McIlroy, M. Lučić, G. Zhang, W. Farhan, M. Sharman, P. Natsev, P. Michel, Y. Cheng, Y. Bansal, S. Qiao, K. Cao, S. Shakeri, C. Butterfield, J. Chung, P. K. Rubenstein, S. Agrawal, A. Mensch, K. Soparkar, K. Lenc, T. Chung, A. Pope, L. Maggiore, J. Kay, P. Jhakra, S. Wang, J. Maynez, M. Phuong, T. Tobin, A. Tacchetti, M. Trebacz, K. Robinson, Y. Katariya, S. Riedel, P. Bailey, K. Xiao, N. Ghelani, L. Aroyo, A. Slone, N. Houlsby, X. Xiong, Z. Yang, E. Gribovskaya, J. Adler, M. Wirth, L. Lee, M. Li, T. Kagohara, J. Pavagadhi, S. Bridgers, A. Bortsova, S. Ghemawat, Z. Ahmed, T. Liu, R. Powell, V. Bolina, M. Iinuma, P. Zablotskaia, J. Besley, D.-W. Chung, T. Dozat, R. Comanescu, X. Si, J. Greer, G. Su, M. Polacek, R. L. Kaufman, S. Tokumine, H. Hu, E. Buchatskaya, Y. Miao, M. Elhawaty, A. Siddhant, N. Tomasev, J. Xing, C. Greer, H. Miller, S. Ashraf, A. Roy, Z. Zhang, A. Ma, A. Filos, M. Besta, R. Blevins, T. Klimenko, C.-K. Yeh, S. Changpinyo, J. Mu, O. Chang, M. Pajarskas, C. Muir, V. Cohen, C. L. Lan, K. Haridasan, A. Marathe, S. Hansen, S. Douglas, R. Samuel, M. Wang, S. Austin, C. Lan, J. Jiang, J. Chiu, J. A. Lorenzo, L. L. Sjösund, S. Cevey, Z. Gleicher, T. Avrahami, A. Boral, H. Srinivasan, V. Selo, R. May, K. Aisopos, L. Hussenot, L. B. Soares, K. Baumli, M. B. Chang, A. Recasens, B. Caine, A. Pritzel, F. Pavetic, F. Pardo, A. Gergely, J. Frye, V. Ramasesh, D. Horgan, K. Badola, N. Kassner, S. Roy, E. Dyer, V. Campos, A. Tomala, Y. Tang, D. E. Badawy, E. White, B. Mustafa, O. Lang, A. Jindal, S. Vikram, Z. Gong, S. Caelles, R. Hemsley, G. Thornton, F. Feng, W. Stokowiec, C. Zheng, P. Thacker, Çağlar Ünlü, Z. Zhang, M. Saleh, J. Svensson, M. Bileschi, P. Patil, A. Anand, R. Ring, K. Tsihlas, A. Vezer, M. Selvi, T. Shevlane, M. Rodriguez, T. Kwiatkowski, S. Daruki, K. Rong, A. Dafoe, N. FitzGerald, K. Gu-Lemberg, M. Khan, L. A. Hendricks, M. Pellat, V. Feinberg, J. Cobon-Kerr, T. Sainath, M. Rauh, S. H. Hashemi, R. Ives, Y. Hasson, Y. Li, E. Noland, Y. Cao, N. Byrd, L. Hou, Q. Wang, T. Sottiaux, M. Paganini, J.-B. Lespiau, A. Moufarek, S. Hassan, K. Shivakumar, J. van Amersfoort, A. Mandhane, P. Joshi, A. Goyal, M. Tung, A. Brock, H. Sheahan, V. Misra, C. Li, N. Rakičević, M. Deghgani, F. Liu, S. Mittal, J. Oh, S. Noury, E. Sezener, F. Huot, M. Lamm, N. D. Cao, C. Chen, G. Elsayed, E. Chi, M. Mahdieh, I. Tenney, N. Hua, I. Petrychenko, P. Kane, D. Scandinaro, R. Jain, J. Uesato, R. Datta, A. Sadovsky, O. Bunyan, D. Rabiej, S. Wu, J. Zhang, G. Vasudevan, E. Leurent, M. Alnahlawi, I. Georgescu, N. Wei, I. Zheng, B. Chan, P. G. Rabinovitch, P. Stanczyk, Y. Zhang, D. Steiner, S. Naskar, M. Azzam, M. Johnson, A. Paszke, C.-C. Chiu, J. S. Elias, A. Mohiuddin, F. Muhammad, J. Miao, A. Lee, N. Vieillard, S. Potluri, J. Park, E. Davoodi, J. Zhang, J. Stanway, D. Garmon, A. Karmarkar, Z. Dong, J. Lee, A. Kumar, L. Zhou, J. Evens, W. Isaac, Z. Chen, J. Jia, A. Levskaya, Z. Zhu, C. Gorgolewski, P. Grabowski, Y. Mao, A. Magni, K. Yao, J. Snaider, N. Casagrande, P. Suganthan, E. Palmer, G. Irving, E. Loper, M. Faruqui, I. Arkatkar, N. Chen, I. Shafran, M. Fink, A. Castaño, I. Giannoumis, W. Kim, M. Rybiński, A. Sreevatsa, J. Prendki, D. Soergel, A. Goedeckemeyer, W. Gierke, M. Jafari, M. Gaba, J. Wiesner, D. G. Wright, Y. Wei, H. Vashisht, Y. Kulizhskaya, J. Hoover, M. Le, L. Li, C. Iwuanyanwu, L. Liu, K. Ramirez, A. Khorlin, A. Cui, T. LIN, M. Georgiev, M. Wu, R. Aguilar, K. Pallo, A. Chakladar, A. Repina, X. Wu, T. van der Weide, P. Ponnapalli, C. Kaplan, J. Simsa, S. Li, O. Dousse, F. Yang, J. Piper, N. Ie, M. Lui, R. Pasumarthi, N. Lintz, A. Vijayakumar, L. N. Thiet, D. Andor, P. Valenzuela, C. Paduraru, D. Peng, K. Lee, S. Zhang, S. Greene, D. D. Nguyen, P. Kurylowicz, S. Velury, S. Krause, C. Hardin, L. Dixon, L. Janzer, K. Choo, Z. Feng, B. Zhang, A. Singhal,
 
-T. Latkar, M. Zhang, Q. Le, E. A. Abellan, D. Du, D. McKinnon, N. Antropova, T. Bolukbasi, O. Keller, D. Reid, D. Finchelstein, M. A. Raad, R. Crocker, P. Hawkins, R. Dadashi, C. Gaffney, S. Lall, K. Franko, E. Filonov, A. Bulanova, R. Leblond, V. Yadav, S. Chung, H. Askham, L. C. Cobo, K. Xu, F. Fischer, J. Xu, C. Sorokin, C. Alberti, C.-C. Lin, C. Evans, H. Zhou, A. Dimitriev, H. Forbes, D. Banarse, Z. Tung, J. Liu, M. Omernick, C. Bishop, C. Kumar, R. Sterneck, R. Foley, R. Jain, S. Mishra, J. Xia, T. Bos, G. Cideron, E. Amid, F. Piccinno, X. Wang, P. Banzal, P. Gurita, H. Noga, P. Shah, D. J. Mankowitz, A. Polozov, N. Kushman, V. Krakovna, S. Brown, M. Bateni, D. Duan, V. Firoiu, M. Thotakuri, T. Natan, A. Mohananey, M. Geist, S. Mudgal, S. Girgin, H. Li, J. Ye, O. Roval, R. Tojo, M. Kwong, J. Lee-Thorp, C. Yew, Q. Yuan, S. Bagri, D. Sinopalnikov, S. Ramos, J. Mellor, A. Sharma, A. Severyn, J. Lai, K. Wu, H.-T. Cheng, D. Miller, N. Sonnerat, D. Vnukov, R. Greig, J. Beattie, E. Caveness, L. Bai, J. Eisenschlos, A. Korchemniy, T. Tsai, M. Jasarevic, W. Kong, P. Dao, Z. Zheng, F. Liu, F. Yang, R. Zhu, M. Geller, T. H. Teh, J. Sanmiya, E. Gladchenko, N. Trdin, A. Sozanschi, D. Toyama, E. Rosen, S. Tavakkol, L. Xue, C. Elkind, O. Woodman, J. Carpenter, G. Papamakarios, R. Kemp, S. Kafle, T. Grunina, R. Sinha, A. Talbert, A. Goyal, D. Wu, D. Owusu-Afriyie, C. Du, C. Thornton, J. Pont-Tuset, P. Narayana, J. Li, S. Fatehi, J. Wieting, O. Ajmeri, B. Uria, T. Zhu, Y. Ko, L. Knight, A. Heliou, N. Niu, S. Gu, C. Pang, D. Tran, Y. Li, N. Levine, A. Stolovich, N. Kalb, R. Santamaria-Fernandez, S. Goenka, W. Yustalim, R. Strudel, A. Elqursh, B. Lakshminarayanan, C. Deck, S. Upadhyay, H. Lee, M. Dusenberry, Z. Li, X. Wang, K. Levin, R. Hoffmann, D. Holtmann-Rice, O. Bachem, S. Yue, S. Arora, E. Malmi, D. Mirylenka, Q. Tan, C. Koh, S. H. Yeganeh, S. Pöder, S. Zheng, F. Pongetti, M. Tariq, Y. Sun, L. Ionita, M. Seyedhosseini, P. Tafti, R. Kotikalapudi, Z. Liu, A. Gulati, J. Liu, X. Ye, B. Chrzaszcz, L. Wang, N. Sethi, T. Li, B. Brown, S. Singh, W. Fan, A. Parisi, J. Stanton, C. Kuang, V. Koverkathu, C. A. Choquette-Choo, Y. Li, T. Lu, A. Ittycheriah, P. Shroff, P. Sun, M. Varadarajan, S. Bahargam, R. Willoughby, D. Gaddy, I. Dasgupta, G. Desjardins, M. Cornero, B. Robenek, B. Mittal, B. Albrecht, A. Shenoy, F. Moiseev, H. Jacobsson, A. Ghaffarkhah, M. Rivière, A. Walton, C. Crepy, A. Parrish, Y. Liu, Z. Zhou, C. Farabet, C. Radebaugh, P. Srinivasan, C. van der Salm, A. Fidjeland, S. Scellato, E. Latorre-Chimoto, H. Klimczak-Pluinska, D. Bridson, D. de Cesare, T. Hudson, P. Mendolicchio, L. Walker, A. Morris, I. Penchev, M. Mauger, A. Guseynov, A. Reid, S. Odoom, L. Loher, V. Cotruta, M. Yenugula, D. Grewe, A. Petrushkina, T. Duerig, A. Sanchez, S. Yadlowsky, A. Shen, A. Globerson, A. Kurzrok, L. Webb, S. Dua, D. Li, P. Lahoti, S. Bhupatiraju, D. Hurt, H. Qureshi, A. Agarwal, T. Shani, M. Eyal, A. Khare, S. R. Belle, L. Wang, C. Tekur, M. S. Kale, J. Wei, R. Sang, B. Saeta, T. Liechty, Y. Sun, Y. Zhao, S. Lee, P. Nayak, D. Fritz, M. R. Vuyyuru, J. Aslanides, N. Vyas, M. Wicke, X. Ma, T. Bilal, E. Eltyshev, D. Balle, N. Martin, H. Cate, J. Manyika, K. Amiri, Y. Kim, X. Xiong, K. Kang, F. Luisier, N. Tripuraneni, D. Madras, M. Guo, A. Waters, O. Wang, J. Ainslie, J. Baldridge, H. Zhang, G. Pruthi, J. Bauer, F. Yang, R. Mansour, J. Gelman, Y. Xu, G. Polovets, J. Liu, H. Cai, W. Chen, X. Sheng, E. Xue, S. Ozair, A. Yu, C. Angermueller, X. Li, W. Wang, J. Wiesinger, E. Koukoumidis, Y. Tian, A. Iyer, M. Gurumurthy, M. Goldenson, P. Shah, M. Blake, H. Yu, A. Urbanowicz, J. Palomaki, C. Fernando, K. Brooks, K. Durden, H. Mehta, N. Momchev, E. Rahimtoroghi, M. Georgaki, A. Raul, S. Ruder, M. Redshaw, J. Lee, K. Jalan, D. Li, G. Perng, B. Hechtman, P. Schuh, M. Nasr, M. Chen, K. Milan, V. Mikulik, T. Strohman, J. Franco, T. Green, D. Hassabis, K. Kavukcuoglu, J. Dean, and O. Vinyals. Gemini: A family of highly capable multimodal models, 2023.
+T. Latkar, M. Zhang, Q. Le, E. A. Abellan, D. Du, D. McKinnon, N. Antropova, T. Bolukbasi, O. Keller, D. Reid, D. Finchelstein, M. A. Raad, R. Crocker, P. Hawkins, R. Dadashi, C. Gaffney, S. Lall, K. Franko, E. Filonov, A. Bulanova, R. Leblond, V. Yadav, S. Chung, H. Askham, L. C. Cobo, K. Xu, F. Fischer, J. Xu, C. Sorokin, C. Alberti, C.-C. Lin, C. Evans, H. Zhou, A. Dimitriev, H. Forbes, D. Banarse, Z. Tung, J. Liu, M. Omernick, C. Bishop, C. Kumar, R. Sterneck, R. Foley, R. Jain, S. Mishra, J. Xia, T. Bos, G. Cideron, E. Amid, F. Piccinno, X. Wang, P. Banzal, P. Gurita, H. Noga, P. Shah, D. J. Mankowitz, A. Polozov, N. Kushman, V. Krakovna, S. Brown, M. Bateni, D. Duan, V. Firoiu, M. Thotakuri, T. Natan, A. Mohananey, M. Geist, S. Mudgal, S. Girgin, H. Li, J. Ye, O. Roval, R. Tojo, M. Kwong, J. Lee-Thorp, C. Yew, Q. Yuan, S. Bagri, D. Sinopalnikov, S. Ramos, J. Mellor, A. Sharma, A. Severyn, J. Lai, K. Wu, H.-T. Cheng, D. Miller, N. Sonnerat, D. Vnukov, R. Greig, J. Beattie, E. Caveness, L. Bai, J. Eisenschlos, A. Korchemniy, T. Tsai, M. Jasarevic, W. Kong, P. Dao, Z. Zheng, F. Liu, F. Yang, R. Zhu, M. Geller, T. H. Teh, J. Sanmiya, E. Gladchenko, N. Trdin, A. Sozanschi, D. Toyama, E. Rosen, S. Tavakkol, L. Xue, C. Elkind, O. Woodman, J. Carpenter, G. Papamakarios, R. Kemp, S. Kafle, T. Grunina, R. Sinha, A. Talbert, A. Goyal, D. Wu, D. Owusu-Afriyie, C. Du, C. Thornton, J. Pont-Tuset, P. Narayana, J. Li, S. Fatehi, J. Wieting, O. Ajmeri, B. Uria, T. Zhu, Y. Ko, L. Knight, A. Heliou, N. Niu, S. Gu, C. Pang, D. Tran, Y. Li, N. Levine, A. Stolovich, N. Kalb, R. Santamaria-Fernandez, S. Goenka, W. Yustalim, R. Strudel, A. Elqursh, B. Lakshminarayanan, C. Deck, S. Upadhyay, H. Lee, M. Dusenberry, Z. Li, X. Wang, K. Levin, R. Hoffmann, D. Holtmann-Rice, O. Bachem, S. Yue, S. Arora, E. Malmi, D. Mirylenka, Q. Tan, C. Koh, S. H. Yeganeh, S. Põder, S. Zheng, F. Pongetti, M. Tariq, Y. Sun, L. Ionita, M. Seyedhosseini, P. Tafti, R. Kotikalapudi, Z. Liu, A. Gulati, J. Liu, X. Ye, B. Chrzaszcz, L. Wang, N. Sethi, T. Li, B. Brown, S. Singh, W. Fan, A. Parisi, J. Stanton, C. Kuang, V. Koverkathu, C. A. Choquette-Choo, Y. Li, T. Lu, A. Ittycheriah, P. Shroff, P. Sun, M. Varadarajan, S. Bahargam, R. Willoughby, D. Gaddy, I. Dasgupta, G. Desjardins, M. Cornero, B. Robenek, B. Mittal, B. Albrecht, A. Shenoy, F. Moiseev, H. Jacobsson, A. Ghaffarkhah, M. Rivière, A. Walton, C. Crepy, A. Parrish, Y. Liu, Z. Zhou, C. Farabet, C. Radebaugh, P. Srinivasan, C. van der Salm, A. Fidjeland, S. Scellato, E. Latorre-Chimoto, H. Klimczak-Plucińska, D. Bridson, D. de Cesare, T. Hudson, P. Mendolicchio, L. Walker, A. Morris, I. Penchev, M. Mauger, A. Guseynov, A. Reid, S. Odoom, L. Loher, V. Cotruta, M. Yenugula, D. Grewe, A. Petrushkina, T. Duerig, A. Sanchez, S. Yadlowsky, A. Shen, A. Globerson, A. Kurzrok, L. Webb, S. Dua, D. Li, P. Lahoti, S. Bhupatiraju, D. Hurt, H. Qureshi, A. Agarwal, T. Shani, M. Eyal, A. Khare, S. R. Belle, L. Wang, C. Tekur, M. S. Kale, J. Wei, R. Sang, B. Saeta, T. Liechty, Y. Sun, Y. Zhao, S. Lee, P. Nayak, D. Fritz, M. R. Vuyyuru, J. Aslanides, N. Vyas, M. Wicke, X. Ma, T. Bilal, E. Eltyshev, D. Balle, N. Martin, H. Cate, J. Manyika, K. Amiri, Y. Kim, X. Xiong, K. Kang, F. Luisier, N. Tripuraneni, D. Madras, M. Guo, A. Waters, O. Wang, J. Ainslie, J. Baldridge, H. Zhang, G. Pruthi, J. Bauer, F. Yang, R. Mansour, J. Gelman, Y. Xu, G. Polovets, J. Liu, H. Cai, W. Chen, X. Sheng, E. Xue, S. Ozair, A. Yu, C. Angermueller, X. Li, W. Wang, J. Wiesinger, E. Koukoumidis, Y. Tian, A. Iyer, M. Gurumurthy, M. Goldenson, P. Shah, M. Blake, H. Yu, A. Urbanowicz, J. Palomaki, C. Fernando, K. Brooks, K. Durden, H. Mehta, N. Momchev, E. Rahimtoroghi, M. Georgaki, A. Raul, S. Ruder, M. Redshaw, J. Lee, K. Jalan, D. Li, G. Perng, B. Hechtman, P. Schuh, M. Nasr, M. Chen, K. Milan, V. Mikulik, T. Strohman, J. Franco, T. Green, D. Hassabis, K. Kavukcuoglu, J. Dean, and O. Vinyals. Gemini: A family of highly capable multimodal models, 2023.
 
 [48] G. Team, A. Kamath, J. Ferret, S. Pathak, N. Vieillard, R. Merhej, S. Perrin, T. Matejovicova, A. Ramé, M. Rivière, et al. Gemma 3 technical report. arXiv preprint arXiv:2503.19786, 2025.
 
@@ -544,9 +596,9 @@ Z. Zhang, Z. Yang, Z. Huang, Z. Huang, Z. Zhao, Z. Chen, and Z. Lin. Kimi-vl tec
 
 [56] M. Wang, S. Sunkara, G. Baechler, J. Lin, Y. Zhu, F. Zubach, L. Shu, and J. Chen. Webquest: A benchmark for multimodal qa on web page sequences, 2024.
 
-[57] P. Wang, S. Bai, S. Tan, S. Wang, Z. Fan, J. Bai, K. Chen, X. Liu, J. Wang, W. Ge, et al. Qwen2-v1: Enhancing vision-language model's perception of the world at any resolution. arXiv preprint arXiv:2409.12191, 2024.
+[57] P. Wang, S. Bai, S. Tan, S. Wang, Z. Fan, J. Bai, K. Chen, X. Liu, J. Wang, W. Ge, et al. Qwen2-vl: Enhancing vision-language model's perception of the world at any resolution. arXiv preprint arXiv:2409.12191, 2024.
 
-[58] W. Wang, Z. He, W. Hong, Y. Cheng, X. Zhang, J. Qi, S. Huang, B. Xu, Y. Dong, M. Ding, et al. Lvbench: An extreme long video understanding benchmark. arXiv preprint arXiv:2406.08035, 2024.
+[58] W. Wang, Z. He, W. Hong, Y. Cheng, X. Zhang, J. Qi, S. Huang, B. Xu, Y. Dong, M. Ding, et al. Lvbench: An extreme long video understanding benchmark. arXiv preprint arXiv:2406.08035 2024.
 
 [59] W. Wang, Q. Lv, W. Yu, W. Hong, J. Qi, Y. Wang, J. Ji, Z. Yang, L. Zhao, X. Song, et al. Cogvlm: Visual expert for pretrained language models. arXiv preprint arXiv:2311.03079, 2023.
 
@@ -588,33 +640,49 @@ In this section, we demonstrate the capabilities and advantages of our model thr
 
 ![Image 26-13](imgs/cropped_page26_idx13.jpg)
 
-**Prompt:** Please develop a similar-looking UI and provide the complete React component code.
+Prompt: Please develop a similar-looking UI and provide the complete React component code.
 
-```html
+Model Response.
 
-<html>\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>任务建议表盘</title>\n<script src=\"https://cdn.jsdelivr.net/npm/react@18.0.0/umd/react.development.js\"></script>\n<script src=\"https://cdn.jsdelivr.net/npm/react-dom.development.js\"></script>\n    <script src=\"https://cdn.jsdelivr.net/npm/@babel/standalone/babel.js\"></script>\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css\"></link>\n<link href=\"https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap\" rel=\"stylesheet\">\n<style>\nbody {\nfont-family: \'Noto Sans SC\', sans-serif;\nbackground-color: #f5f7fa;\n}\nprogress-bar {\nheight: 8px;\nborder-radius: 4px;\n}\ncolor-circle {\nwidth: 24px;\nheight: 24px;\nborder-radius: 50\%;\n    cursor: pointer;\ndisplay: inline-block;\nmargin-right: 10px;\n}\n\n</style>\n</head>\n<body>\n<div id=\"root\"></div>\n\n<script type=\"text/babel\">\nconst Header = () => {\nreturn (\n<header className=\"bg-blue-600 text-white p-4 flex justify-between items-center\">\n<h1 className=\"text-xl font-bold\">任务建议表盘</h1>\n<button className=\"text-white\">\n<i className=\"fas fa-moon\"></i>\n</button>\n</header>\n    );\n};\n\nconst DashboardSummary = () => {\nreturn (\n<div className=\"bg-white rounded-lg p-5 shadow-sm mb-5\">\n<h2 className=\"text-lg font-medium mb-4\">仪表盘摘要</h2>\n\n<div className=\"mb-6\">\n<div className=\"flex justify-between mb-1\">\n<span className=\"text-gray-600\">整体进度</span>\n<span className=\"text-gray-600\">51\%</span>\n</div>\n<div className=\"w-full bg-gray-200 rounded-full h-2\">\n<div className=\"bg-blue-500 h-2 rounded-full\" style={{width: \'51\%\'}}></div>\n</div>\n</div>\n\n<div className=\"grid grid-cols-2 gap-4 mb-6\">\n<div className=\"bg-gray-100 p-4 rounded-lg\">\n<div className=\"text-2xl font-bold text-gray-800\">4</div>\n<div className=\"text-gray-600\">总任务数</div>\n</div>\n<div className=\"bg-gray-100 p-4 rounded-lg\">\n<div className=\"text-2xl font-bold text-gray-800\">0</div>\n<div className=\"text-gray-600\">已完成</div>\n</div>\n</div>\n\n<div className=\"mb-6\">\n<h3 className=\"text-gray-600 mb-2\">...</html>
+<think>...</think><answer>
+
+<html>\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>任务建议表盘</title>\n<script src=\"https://cdn.jsdelivr.net/npm/react@18.0.0/umd/react.development.js\">\n<script src=\"https://cdn.jsdelivr.net/npm/react-dom.development.js\">\n<script src=\"https://cdn.jsdelivr.net/npm/babel/standalone/babel.js\">\n<script src=\"https://cdn.tailwindcss.com\">\n<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css\">\n<link href=\"https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap\" rel=\"stylesheet\">\n<style>\nbody {\nfont-family: \'Noto Sans SC\', sans-serif;\nbackground-color: #f5f7fa;\n}\nprogress-bar {\nheight: 8px;\nborder-radius: 4px;\n}\n.color-circle {\nwidth: 24px;\nheight: 24px;\nborder-radius: 50%;\ncursor: pointer;\ndisplay: inline-block;\nmargin-right: 10px;\n}\n</style>\n</head>\n<body>\n<div id=\"root\"></div>\n\n<script type=\"text/babel\">\nconst Header = () => {\nreturn (\n<header className=\"bg-blue-600 text-white p-4 flex justify-between items-center\">\n<h1 className=\"text-xl font-bold\">任务建议表盘</h1>\n<button className=\"text-white\">\n<i className=\"fas fa-moon\">\i>\n</button>\n</header>\n\n);\n};\n\nconst DashboardSummary = () => {\nreturn (\n<div className=\"bg-white rounded-lg p-5 shadow-sm mb-5\">\n<h2 className=\"text-lg font-medium mb-4\">仪表盘摘要</h2>\n\n<div className=\"mb-6\">\n<div className=\"flex justify-between mb-1\">\n<span className=\"text-gray-600\">整体进度</span>\n<span className=\"text-gray-600\">51%</span>\n</div>\n<div className=\"w-full bg-gray-200 rounded-full h-2\">\n<div className=\"bg-blue-500 h-2 rounded-full\" style={{width: \'51%\'}}></div>\n</div>\n</div>\n<div className=\"grid grid-cols-2 gap-4 mb-6\">\n<div className=\"bg-gray-100 p-4 rounded-lg\">\n<div className=\"text-2x1 font-bold text-gray-800\">4</div>\n<div className=\"text-gray-600\">总任务数</div>\n</div>\n<div className=\"bg-gray-100 p-4 rounded-lg\">\n<div className=\"text-gray-600\">已完成</div>\n</div>\n</div>\n<div className=\"mb-6\">\n<h3 className=\"text-gray-600 mb-2\">...</html>
 
 </answer>
 
-```
+<div align="center">
 
 Figure 7: A case showing the ability of generating the front-end code from a UI snapshot.
 
+</div>
+
 ![Image 27-14](imgs/cropped_page27_idx14.jpg)
 
+<div align="center">
+
 Figure 8: A case showing the ability of giving detailed and precise description for a video.
+
+</div>
 
 ## A.3 Video Description (in Chinese)
 
 ![Image 28-15](imgs/cropped_page28_idx15.jpg)
 
-![Image 28-16](imgs/cropped_page28_idx16.jpg)
+氛围与情感整体氛围充满爱意与亲密感，通过两人自然流畅的肢体动作（如拥抱式接触、温柔抚摸）、温和的神情以及稳定的居家场景（手工创作、柔和光线），传递出“彼此陪伴、共享日常”的情感联结，仿佛是一段充满温情的亲密时刻记录。简言之，这个视频以细腻的互动和温馨的环境，展现了两人之间深厚的情感与生活里的温情瞬间。</answer>
+
+<div align="center">
 
 Figure 9: A case showing the ability of giving detailed and precise description for a video.
 
+</div>
+
+<div align="center">
+
 Video
 
-![Image 29-17](imgs/cropped_page29_idx17.jpg)
+</div>
+
+![Image 29-16](imgs/cropped_page29_idx16.jpg)
 
 ## Prompt: 这个现象发生的原因是什么？为什么中间水杯会有水？
 
@@ -622,9 +690,9 @@ Video
 
 <think>用户现在需要解释这个实验现象的原因。首先看图片里的元素：三个玻璃杯，左右是红色和蓝色液体，中间是空的，中间有纸巾连接左右杯子。这是毛细现象（或渗透作用）的演示。
 
-首先分析原理：纸巾作为多孔材料，具有毛细作用（capillary action）。当两端存在液面高度差时，液体通过毛细管（这里纸巾的纤维间隙类似毛细管）移动。左边红液、右边蓝液，中间纸巾建立通道后，由于液体在纸巾中的毛细作用，会从低浓度（或低液位）不对，应该是液体的流动方向由压力差等，但更简单的是毛细现象导致液体通过纸巾移动到中间空杯中，直到两侧液面平衡或者形成某种混合？
+首先分析原理：纸巾作为多孔材料，具有毛细作用（capillary action）。当两端存在液面高度差时，液体通过毛细管（这里纸巾的纤维间隙类似毛细管）移动。左边红液、右边蓝液，中间纸巾建立通道后，由于液体在纸巾中的毛细作用，会从低浓度（或低液位？不对，应该是液体的流动方向由压力差等，但更简单的是毛细现象导致液体通过纸巾移动到中间空杯中，直到两侧液面平衡或者形成某种混合？
 
-不过更准确地说，这是展示水的毛细运动（capillary movement），即液体在细小管道（这里是纸巾的纤维间缝隙）中因表面张力等因素向上或向下的移动。当左右两杯有不同颜色的液体，中间用纸巾连接，纸巾吸收水分后会通过毛细作用将水输送到中间的空杯里，因为纸巾的吸水性使得水沿着纤维间的通道移动，从而让中间的水杯逐渐被水填满。
+不过更准确地说，这是展示水的毛细运动（capillary movement），即液体在细小管道（这里是纸巾的纤维向缝隙）中因表面张力等因素向上或向下的移动。当左右两杯有不同颜色的液体，中间用纸巾连接，纸巾吸收水分后会通过毛细作用将水输送到中间的空杯里，因为纸巾的吸水性使得水沿着纤维间的通道移动，从而让中间的水杯逐渐被水填满。
 
 所以原因是因为纸巾具有毛细作用（或毛细现象），能够吸收并输送液体，使得左边的红色液体和右边的蓝色液体通过纸巾的纤维间隙（类似毛细管）进入中间的空杯中，最终中间杯子里有了水（其实是两种颜色液体的混合？不，可能刚开始是分别从两边吸水，然后中间积累）。因此，中间水杯有水是因为纸巾利用了毛细现象，将左右两侧的液体通过自身的纤维结构输送到中间的空杯中，导致中间杯子里出现液体。总结步骤：
 
@@ -632,37 +700,47 @@ Video
 
 所以答案要说明是毛细现象（或毛细作用），纸巾的吸水和导水能力导致中间杯有水。</think><answer>这个现象是由于**毛细现象（或毛细作用）**导致的。具体来说：纸巾是多孔材料，其纤维之间的缝隙类似于“毛细管”。当左右两个装有不同颜色液体的杯子与中间的空杯之间用纸巾连接时，纸巾会利用自身吸水性和纤维间的毛细作用，将左侧红色液体和右侧蓝色液体通过纤维间隙输送至中间的空杯中。随着这种输送过程的进行，中间的空杯逐渐被液体填满，从而出现了“中间水杯有水”的现象。该现象是由毛细现象（或毛细作用）引起的，纸巾通过其多孔结构的毛细作用，将左右两侧的液体输送至中间的空杯中，使中间水杯内出现液体。
 
-Figure 10: A case showing the ability of answering a question related to a video using perception, knowledge and reasoning.
+![Image 30-17](imgs/cropped_page30_idx17.jpg)
 
-![Image 30-18](imgs/cropped_page30_idx18.jpg)
-
-Prompt: In Simple Calendar Pro, create a calendar event in two weeks from today at 3h with the title 'Meeting with Dr. Smith' and the description 'We will discuss marketing strategies.' The event should last for 15 mins.
+Prompt: In Simple Calendar Pro, create a calendar event in two weeks from today at 3h with the title 'Meeting with Dr. Smith' and the description 'We will discuss marketing strategies.'. The event should last for 15 mins.
 
 Model Response:
 
-<think> Let me analyze the current screenshot: 1. This is the Simple Calendar Pro app showing the calendar view for October. 2. The calendar displays dates from October 1-31, with days of the week labeled as S, M, T, W, T, F, S at the top. 3. Today appears to be October 15th, as indicated by the blue highlighted circle around the number 15 in the fourth row. 4. The task requires creating an event in two weeks from today (October 15th) which would be October 29th. 5. Looking at the bottom of the calendar, I can see the dates 29-31 of October. October 29th would be the date we need according to the task (two weeks from today). 6. I can see various existing events on different dates in October: - October 8th has a "Meeting" event - October 9th has a "Review" event - October 11th has a "Review" event - October 14th has a "Call with" event - October 21st has a "Catch up" event - October 23rd has a "Catch up" event - October 25th has a "Catch up" event - October 27th has a "Worksho" (likely "Workshop") and "Meeting" events - October 30th has a "Catch up" event - October 31st has an "Appointm" (likely "Appointment") event; 7. There's a floating action button (FAB) with a plus sign at the bottom right, which is used to add new events.
+<think> Let me analyze the current screenshot: 1. This is the Simple Calendar Pro app showing the calendar view for October.
 
-Looking at my previous steps: 1. I opened the Simple Calendar Pro app. 2. I clicked the floating action button (plus icon) to start creating a new event. 3. In the last step, I clicked what appears to have been a section of the screen but the precise element isn't clear from the history.
+2. The calendar displays dates from October 1-31, with days of the week labeled as S, M, T, W, T, F, S at the top. 3. Today appears to be October 15th, as indicated by the blue highlighted circle around the number 15 in the fourth row. 4. The task requires creating an event in two weeks from today (October 15th) which would be October 29th. 5. Looking at the bottom of the calendar, I can see the dates 29-31 of October. October 29th would be the date we need according to the task (two weeks from today). 6. I can see various existing events on different dates in October: - October 8th has a "Meeting" event - October 9th has a "Review" event - October 11th has a "Review" event - October 14th has a "Call with" event - October 21st has a "Catch up" event - October 23rd has a "Catch up" event - October 25th has a "Catch up" event - October 27th has a "Worksho" (likely "Workshop") and "Meeting" events - October 30th has a "Catch up" event - October 31st has an "Appointm" (likely "Appointment") event; 7. There’s a floating action button (FAB) with a plus sign at the bottom right, which is used to add new events.
 
-Based on the current screenshot and the task requirements: - Today is October 15th - Two weeks from today would be October 29th - I need to select October 29th to create our event - After selecting the date, I'll need to add the event details: title, description, and time
+Looking at my previous steps: 1. I opened the Simple Calendar Pro app. 2. I clicked the floating action button (plus icon) to start creating a new event. 3. In the last step, I clicked what appears to have been a section of the screen but the precise element isn’t clear from the history.
+
+Based on the current screenshot and the task requirements: - Today is October 15th - Two weeks from today would be October 29th - I need to select October 29th to create our event - After selecting the date, I’ll need to add the event details: title, description, and time
 
 The current calendar view shows all of October, and October 29th is visible at the bottom left portion of the calendar. Since my last action may not have correctly selected the date area, I need to click directly on the date October 29th to select it before adding the event details.
 
-Next steps: 1. Click directly on the date October 29th in the calendar 2. After selecting the date, I'll expect to be taken to an event creation form 3. Then I'll enter the event title, description, and time as specified in the task
+Next steps: 1. Click directly on the date October 29th in the calendar 2. After selecting the date, I’ll expect to be taken to an event creation form 3. Then I’ll enter the event title, description, and time as specified in the task
 
 For the event details needed: - Title: 'Meeting with Dr. Smith' - Description: 'We will discuss marketing strategies.' - Time: 3h - Duration: 15 mins
 
 So my next action should be to click on October 29th to select it as the date for our new event. This will likely take me directly to the event creation interface where I can add all the required details.</think><answer> Action:
 
-{"action_type": "click", "box_2d": [27,840,122,885]}
+{“action_type": "click", "box_2d": [27,840,122,885]}
+
+</answer>
+
+<div align="center">
 
 Figure 11: A case showing the ability of GUI recognition and operation.
 
-![Image 31-19](imgs/cropped_page31_idx19.jpg)
+</div>
+
+![Image 31-18](imgs/cropped_page31_idx18.jpg)
+
+<div align="center">
 
 Figure 12: A case showing the ability of chart understanding and question answering.
 
-![Image 32-20](imgs/cropped_page32_idx20.jpg)
+</div>
+
+![Image 32-19](imgs/cropped_page32_idx19.jpg)
 
 ## Model Response:
 
@@ -680,59 +758,13 @@ Figure 12: A case showing the ability of chart understanding and question answer
 
 中世纪欧洲的城堡中，法国的卡尔卡松城堡以其保存最完整的中世纪城墙和防御体系闻名，其特征包括多层城墙、不同形状的塔楼（如圆形和方形塔楼）、尖顶屋顶以及周边的自然环境。卡尔卡松位于法国南部，地势较高，俯瞰下方的平原和植被，与图片中的场景高度吻合。此外，卡尔卡松的城墙和塔楼在修复后仍保留了原始的中世纪风貌，且作为世界文化遗产，周边有供游客游览的步道，符合图片中展现的旅游场景。结论：这里可能是法国的卡尔卡松城堡。
 
+<div align="center">
+
 Figure 13: A case showing the ability of inferring the geographic position from a picture.
 
-![Image 33-21](imgs/cropped_page33_idx21.jpg)
+</div>
 
-**Image**
-
-```python
-
-def is_palindrome(s: str) -> bool:
-
-    # Initialize left and right pointers
-
-    left, right = 1, len(s)
-
-    while left < right:
-
-        # Move the left pointer forward if the character is not alphanumeric
-
-        while left < right and not s[left].isalnum():
-
-            left += 1
-
-        # Move the right pointer backward if the character is not alphanumeric
-
-        while left < right and not s[right].isalnum():
-
-            right -= 1
-
-        # Compare characters at both pointers, normalized to lowercase
-
-        if s[left].lower() != s[right].lower():
-
-            return False
-
-        # Move both pointers closer
-
-        left += 1
-
-        right -= 1
-
-    return True
-
-```
-
-**Prompt:** Can you spot the bugs and return the correct code?
-
-**Model Response:**
-
-<think> Got it, let’s look at the provided code for is_palindrome. ... Original lines: 378 def is_palindrome(s: str) -> bool: 379 # Initialize left and right pointers 380 left, right = 1, len(s) 381 while left < right: ... Ah, here’s the bug: the left pointer should start at the beginning (index 0) not 1. Because in Python strings, indices start at 0. So if we have a string of length n, the right pointer should be n-1. So correcting both: left should be 0, right should be len(s)-1. Let’s fix those two issues. The original code initializes left as 1 and right as len(s), which is incorrect. The correct initialization should be left = 0, right = len(s) - 1. That way, for any string, the pointers start at the first and last valid characters. ... So the key correction is initializing left and right correctly. The original code had left=1 and right=len(s), which is wrong. It should be left=0, right=len(s)-1. </think><answer> To identify the bug, we analyze the initialization of the pointers: - The original code sets left = 1 and right = len(s), which is incorrect. In Python, string indices start at 0, so the left pointer should begin at the start (0) and the right pointer at the end (len(s) - 1).
-
-**Corrected Code:**
-
-```python
+![Image 33-20](imgs/cropped_page33_idx20.jpg)
 
 def is_palindrome(s: str) -> bool:
 
@@ -768,51 +800,63 @@ def is_palindrome(s: str) -> bool:
 
     return True
 
-```
-
-**Explanation:**
+Explanation:
 
 The primary bug was the incorrect initialization of left and right pointers. By setting left = 0 and right = len(s) - 1, we ensure the pointers start at the first and last valid characters, respectively. This fixes potential index errors and ensures proper comparison across the entire string.
 
 </answer>
 
+<div align="center">
+
 Figure 14: A case showing the integrated ability of code recognition, debugging and correction.
 
-![Image 34-22](imgs/cropped_page34_idx22.jpg)
+</div>
 
-![Image 34-23](imgs/cropped_page34_idx23.jpg)
+![Image 34-21](imgs/cropped_page34_idx21.jpg)
 
-<think>...</think><answer>要解决这道题，需逐一分析选项并结合化学反应原理判断：选项A分析I的官能团判断：单体I的结构为 $\mathrm{H}_2\mathrm{C} = \mathrm{C}(\mathrm{COOCH}_3)\mathrm{CN}$，其含有的官能团需明确：碳碳双键(C=C)：决定加成反应能力的官能团；酯基(-COOCH$_3$)：由羧酸与醇形成的官能团；腈基(-CN)：含氮的官能团。因此，I含有3种官能团，而非2种，选项A错误。选项B分析II的水溶性判断：聚合物II是单体I经加聚反应生成的高分子化合物（结构为 $\left[\mathrm{CH}_2 - \mathrm{C}(\mathrm{COOCH}_3)\mathrm{CN}\right]_n$）。虽然酯基（-COOCH$_3$）具有一定亲水性，但高分子量的聚酯类物质一般难溶于水（小分子酯易溶，但高分子链段间作用力强，无法溶解于水）。因此，II不可因遇水溶解而使黏合物分离，选项B错误。选项C分析II的状态判断：聚合物II是由多个单体通过加聚反应形成的高分子化合物，这类高分子的分子量通常较大（可达数千至数万以上）。根据高分子材料的性质，常温下高分子化合物多为固态或半固态（类似塑料、橡胶等形态）。因此，常温下II为固态，选项C正确。选项D分析反应类型判断：缩聚反应的特征是有小分子（如水、醇、氨等）生成，而加聚反应则是单体通过加成反应直接形成高分子，无小分子析出。本题中，单体I在极少量（$\mathrm{OH}^{-}$）催化下，仅发生碳碳双键的加成聚合，生成高分子II，过程中未产生任何小分子，因此该反应属于加聚反应，而非缩聚反应，选项D错误。综上，正确的说法是选项C。
+<think>..</think><answer>要解决这道题，需逐一分析选项并结合化学反应原理判断：选项A分析I的官能团判断：单体I的结构为 $ \mathrm{H}_{2}\mathrm{C}=\mathrm{C}(\mathrm{COOCH}_{3})\mathrm{CN} $ ，其含有的官能团需明确：碳碳双键（C=C）：决定加成反应能力的官能团；酯基（ $ -\mathrm{COOCH}_{3} $ ：由羧酸与醇形成的官能团；腈基（ $ -\mathrm{CN} $ ：含氮的官能团。因此，I含有3种官能团，而非2种，选项A错误。选项B分析Ⅱ的水溶性判断：聚合物Ⅱ是单体I经加聚反应生成的高分子化合物（结构为 $ [\mathrm{CH}_{2}-\mathrm{C}(\mathrm{COOCH}_{3})\mathrm{CN}]_{n} $ ）。虽然酯基（ $ -\mathrm{COOCH}_{3} $ ）具有一定亲水性，但高分子量的聚酯类物质一般难溶于水（小分子酯易溶，但高分子链段间作用力强，无法溶解于水）。因此，Ⅱ不可因遇水溶解而使黏合物分离，选项B错误。选项C分析Ⅱ的状态判断：聚合物Ⅱ是由多个单体通过加聚反应形成的高分子化合物，这类高分子的分子量通常较大（可达数千至数万以上）。根据高分子材料的性质，常温下高分子化合物多为固态或半固态（类似塑料、橡胶等形态）。因此，常温下Ⅱ为固态，选项C正确。选项D分析反应类型判断：缩聚反应的特征是有小分子（如水、醇、氨等）生成，而加聚反应则是单体通过加成反应直接形成高分子，无小分子析出。本题中，单体I在极少量 $ (\mathrm{OH}^{-}) $ 催化下，仅发生碳碳双键的加成聚合，生成高分子Ⅱ，过程中未产生任何小分子，因此该反应属于加聚反应，而非缩聚反应，选项D错误。综上，正确的说法是选项C。
 
 </answer>
 
+<div align="center">
+
 Figure 15: A case showing the ability of solving Chemistry problem.
 
-![Image 35-24](imgs/cropped_page35_idx24.jpg)
+</div>
 
-![Image 35-25](imgs/cropped_page35_idx25.jpg)
+## A.10 Math Problem Solving
+
+![Image 35-22](imgs/cropped_page35_idx22.jpg)
+
+<div align="center">
 
 Figure 16: A case showing the ability of solving complex Math problem.
 
-![Image 36-26](imgs/cropped_page36_idx26.jpg)
+</div>
 
-![Image 36-27](imgs/cropped_page36_idx27.jpg)
+![Image 36-23](imgs/cropped_page36_idx23.jpg)
+
+<div align="center">
 
 Figure 17: A case showing the ability of deeply interpreting a long document.
 
-![Image 37-28](imgs/cropped_page37_idx28.jpg)
+</div>
 
-![Image 37-29](imgs/cropped_page37_idx29.jpg)
+![Image 37-24](imgs/cropped_page37_idx24.jpg)
 
-![Image 37-30](imgs/cropped_page37_idx30.jpg)
+<div align="center">
 
 Figure 18: A case showing the ability of complex spatial reasoning.
 
-![Image 38-31](imgs/cropped_page38_idx31.jpg)
+</div>
 
-![Image 38-32](imgs/cropped_page38_idx32.jpg)
+![Image 38-25](imgs/cropped_page38_idx25.jpg)
+
+<div align="center">
 
 Figure 19: A case showing the ability of visual grounding.
+
+</div>
 
 ## B Evaluation Protocols and Instructions
 
@@ -820,9 +864,9 @@ Figure 19: A case showing the ability of visual grounding.
 
 To assess the HTML code generation capabilities of GLM-4.1V-Thinking and GLM-4.5V, we follow the "direct" evaluation setting described in Design2Code [43], omitting both text augmentation and self-revision steps. In contrast to [43], we employ GPT-o4-mini as the visual judge to compare each rendered HTML output against the corresponding UI reference screenshot. This choice is motivated by our empirical observation that GPT-o4-mini consistently produces similarity judgments that are more accurate and more closely aligned with human preferences than those obtained from CLIP, particularly in the presence of complex UI layouts. The scoring prompt provided to GPT-o4-mini is as follows:
 
-I will give you two images. The first is the reference, and the second is generated from the first via code rendering. Please rate their similarity from 0-100, where 0 means completely different and 100 means identical. Provide the score inside a LaTeX \boxed{} and briefly explain your reasoning
+I will give you two images. The first is the reference, and the second is generated from the first via code rendering. Please rate their similarity from 0-100, where 0 means completely different and 100 means identical. Provide the score inside a LaTeX \boxed{} and briefly explain your reasonin
 
-We take 80 as the score threshold for a faithful UI2Code reproduction and report accuracy as the proportion of test cases meeting this criterion (score $ \geq80 $ ). This choice is based on our observation that rendering differences in resolution, fonts, and other factors make a perfect score of 100 impractical almost all results would be judged "inconsistent," distorting the evaluation. Human raters focus on overall layout, colors, and elements rather than pixel-level differences, and in our manual evaluation, cases with VLM-assigned scores $ \geq80 $ were generally considered visually and functionally consistent with the reference.
+We take 80 as the score threshold for a faithful UI2Code reproduction and report accuracy as the proportion of test cases meeting this criterion (score $ \geq 80 $ ). This choice is based on our observation that rendering differences in resolution, fonts, and other factors make a perfect score of 100 impractical almost all results would be judged "inconsistent," distorting the evaluation. Human raters focus on overall layout, colors, and elements rather than pixel-level differences, and in our manual evaluation, cases with VLM-assigned scores $ \geq 80 $ were generally considered visually and functionally consistent with the reference.
 
 ## B.2 GUI Agent Instructions
 
@@ -830,21 +874,25 @@ To achieve optimal performance and reproduce the results presented in the paper 
 
 ## B.3 Visual Grounding Instructions
 
-To reliably trigger the grounding behavior of GLM-4.5V or GLM-4.1V-Thinking and reproduce the evolution results reported in the paper, we suggest using prompts similar to the format shown below:
+To reliably trigger the grounding behavior of GLM-4.5V or GLM-4.1V-Thinking and reproduce the evolution results reported in the paper, we suggest using prompts similar to the format shown below.:
 
 - Help me to locate <expr> in the image and give me its bounding boxes.
 
-- Please pinpoint the bounding box [[x1,y1,x2,y2], . . . ] in the image as per the given description. <expr>
+- Please pinpoint the bounding box [[x1,y1,x2,y2],...] in the image as per the given description. <expr>
 
-In the prompts, <expr> is the description of the target object, and the bracket style may vary ([], (), <>, {}, etc.). Each output bounding box will be a quadruple $ [x_{1}, y_{1}, x_{2}, y_{2} ] $ composed of the coordinates of the top-left and bottom-right corners, where each value is normalized by the image width (for x) or height (for y) and scaled by 1000.
+In the prompts, <expr> is the description of the target object, and the bracket style may vary ([], (), <>, {} , etc.). Each output bounding box will be a quadruple $ [x_{1}, y_{1}, x_{2}, y_{2} ] $ composed of the coordinates of the top-left and bottom-right corners, where each value is normalized by the image width (for x) or height (for y) and scaled by 1000.
 
 ## C Experimental Results of GLM-4.1V-9B-Thinking
 
 The comparison of GLM-4.1V-9B-Thinking with baselines under 10B parameters is provided in Table 3. GLM-4.1V-9B-Thinking sets a new state-of-the-art across 23 out of 28 benchmarks among models under 10B parameters, including MiMo-VL [46], Kimi-VL [50], InternVL3 [72], and Qwen-VL series [4].
 
-<table><thead><tr><th>Task</th><th>Benchmark</th><th>GLM-4.1V -9B-Thinking</th><th>Qwen2.5-VL 7B</th><th>InternVL3 9B</th><th>Kimi-VL A3B-Thinking</th><th>MiMo-VL 7B-RL</th><th>Qwen2.5-VL 72B</th><th>GPT-4o 2024-11-20</th></tr></thead><tbody><tr><td rowspan="5">General VQA</td><td>MMBench-V1.1-EN</td><td><strong>85.8</strong></td><td>82.7</td><td>81.7</td><td>71.6*</td><td>79.4*</td><td>88.0</td><td>84.4*</td></tr><tr><td>MMBench-V1.1-CN</td><td><strong>84.7</strong></td><td>80.1*</td><td>80.9*</td><td>70.2*</td><td>80.3*</td><td>86.7*</td><td>83.2*</td></tr><tr><td>MMStar</td><td><strong>72.9</strong></td><td>63.9</td><td>66.3</td><td>62.3*</td><td>69.3*</td><td>70.8</td><td>66.2*</td></tr><tr><td>BLINK</td><td><strong>65.1</strong></td><td>45.7*</td><td>58.6</td><td>53.5*</td><td>62.4</td><td>58.0*</td><td>66.4*</td></tr><tr><td>MUIRBENCH</td><td><strong>74.7</strong></td><td>53.2*</td><td>51.4</td><td>56.8*</td><td>64.8*</td><td>62.9*</td><td>69.7*</td></tr><tr><td rowspan="6">STEM</td><td>MMMU</td><td><strong>68.0</strong></td><td>58.6</td><td>57.7</td><td>61.7</td><td>66.7</td><td>70.2</td><td>69.1*</td></tr><tr><td>MMMU-Pro</td><td><strong>57.1</strong></td><td>38.3</td><td>42.1*</td><td>45.5*</td><td>53.1*</td><td>51.1</td><td>54.6*</td></tr><tr><td>VideoMMMU</td><td><strong>61.0</strong></td><td>47.4</td><td>-</td><td>-</td><td>43.3</td><td>60.2</td><td>61.2*</td></tr><tr><td>AI2D</td><td><strong>87.9</strong></td><td>83.8*</td><td>84.6</td><td>78.1*</td><td>83.5</td><td>87.6*</td><td>84.8*</td></tr><tr><td>MathVista</td><td>80.7</td><td>68.2</td><td>71.5</td><td>71.3</td><td><strong>81.5</strong></td><td>74.8</td><td>64.0*</td></tr><tr><td>WeMath</td><td>63.8</td><td>31.0*</td><td>33.8</td><td>36.0*</td><td><strong>66.3</strong></td><td>46.0*</td><td>44.4*</td></tr><tr><td rowspan="3">OCR &amp; Chart</td><td>ChartQAPro</td><td><strong>59.5</strong></td><td>38.0*</td><td>36.1*</td><td>44.1*</td><td>53.6*</td><td>46.7*</td><td>49.4*</td></tr><tr><td>ChartMuseum</td><td><strong>48.8</strong></td><td>27.2*</td><td>21.5*</td><td>29.3*</td><td>44.4*</td><td>39.6*</td><td>42.7*</td></tr><tr><td>OCRBench</td><td>84.2</td><td>84.5*</td><td><strong>87.7</strong></td><td>78.7*</td><td>86.6</td><td>85.1*</td><td>81.1*</td></tr><tr><td>Long Document</td><td>MMLongBench-Doc</td><td><strong>42.4</strong></td><td>25.1*</td><td>20.4*</td><td>35.1</td><td>24.9*</td><td>35.2*</td><td>41.0*</td></tr><tr><td>Visual Grounding</td><td>RefCOCO-avg (val)</td><td>87.4</td><td>87.1†</td><td>88.7</td><td>-</td><td><strong>89.6</strong></td><td>90.2†</td><td>-</td></tr><tr><td rowspan="5">GUI Agents</td><td>OSWorld</td><td><strong>14.9</strong></td><td>1.9*</td><td>1.4*</td><td>8.2</td><td>1.9*</td><td>8.8</td><td>5.0†</td></tr><tr><td>AndroidWorld</td><td><strong>41.7</strong></td><td>27.6†1</td><td>1.9*</td><td>-</td><td>10.8*</td><td>35.0</td><td>34.5†2</td></tr><tr><td>WebVoyageSom</td><td><strong>69.0</strong></td><td>14.1*</td><td>19.5*</td><td>1.8*</td><td>34.0*</td><td>40.4*</td><td>59.4*</td></tr><tr><td>Webquest-SingleQA</td><td><strong>72.1</strong></td><td>53.5*</td><td>39.3*</td><td>56.8*</td><td>64.0*</td><td>60.5*</td><td>57.0*</td></tr><tr><td>Webquest-MultiQA</td><td><strong>54.7</strong></td><td>39.4*</td><td>26.4*</td><td>42.0*</td><td>47.5*</td><td>52.1*</td><td>52.8</td></tr><tr><td rowspan="2">Coding</td><td>Design2Code</td><td><strong>64.7</strong></td><td>29.1*</td><td>15.3*</td><td>38.8*</td><td>28.7*</td><td>41.9*</td><td>35.3*</td></tr><tr><td>Flame-React-Eval</td><td><strong>72.5</strong></td><td>25.0*</td><td>11.3*</td><td>36.3*</td><td>8.8*</td><td>46.3*</td><td>75.0*</td></tr><tr><td rowspan="5">Video Understanding</td><td>VideoMME (w/o)</td><td><strong>68.2</strong></td><td>65.1</td><td>66.7</td><td>67.8</td><td>67.4</td><td>73.3</td><td>71.9</td></tr><tr><td>VideoMME (w/)</td><td><strong>73.6</strong></td><td>71.6</td><td>68.9</td><td>72.6</td><td>72.8*</td><td>79.1</td><td>77.2</td></tr><tr><td>MMVU</td><td><strong>59.4</strong></td><td>50.1</td><td>-</td><td>-</td><td>52.4*</td><td>62.9</td><td>61.4*</td></tr><tr><td>LVBench</td><td>45.1</td><td><strong>45.3</strong></td><td>-</td><td>-</td><td>37.1*</td><td>47.3</td><td>48.9</td></tr><tr><td>MotionBench</td><td><strong>59.0</strong></td><td>-</td><td>-</td><td>-</td><td>48.4*</td><td>-</td><td>58.0*</td></tr></tbody></table>
+<table border="1"><tr><td>Task</td><td>Benchmark</td><td>GLM-4.1V-9B-Thinking</td><td>Qwen2.5-VL7B</td><td>InternVL39B</td><td>Kimi-VLA3B-Thinking</td><td>MiMo-VL7B-RL</td><td>Qwen2.5-VL72B</td><td>GPT-4o2024-11-20</td></tr><tr><td rowspan="5">General VQA</td><td>MMBench-V1.1-EN</td><td>85.8</td><td>82.7</td><td>81.7</td><td>71.6*</td><td>79.4*</td><td>88.0</td><td>84.4*</td></tr><tr><td>MMBench-V1.1-CN</td><td>84.7</td><td>80.1*</td><td>80.9*</td><td>70.2*</td><td>80.3*</td><td>86.7*</td><td>83.2*</td></tr><tr><td>MMStar</td><td>72.9</td><td>63.9</td><td>66.3</td><td>62.3*</td><td>69.3*</td><td>70.8</td><td>66.2*</td></tr><tr><td>BLINK</td><td>65.1</td><td>45.7*</td><td>58.6</td><td>53.5*</td><td>62.4</td><td>58.0*</td><td>66.4*</td></tr><tr><td>MUIRBENCH</td><td>74.7</td><td>53.2*</td><td>51.4</td><td>56.8*</td><td>64.8*</td><td>62.9*</td><td>69.7*</td></tr><tr><td rowspan="7">STEM</td><td>MMMU</td><td>68.0</td><td>58.6</td><td>57.7</td><td>61.7</td><td>66.7</td><td>70.2</td><td>69.1*</td></tr><tr><td>MMMU-Pro</td><td>57.1</td><td>38.3</td><td>42.1*</td><td>45.5*</td><td>53.1*</td><td>51.1</td><td>54.6*</td></tr><tr><td>VideoMMMU</td><td>61.0</td><td>47.4</td><td>-</td><td>-</td><td>43.3</td><td>60.2</td><td>61.2*</td></tr><tr><td>AI2D</td><td>87.9</td><td>83.8*</td><td>84.6</td><td>78.1*</td><td>83.5</td><td>87.6*</td><td>84.8*</td></tr><tr><td>MathVista</td><td>80.7</td><td>68.2</td><td>71.5</td><td>71.3</td><td>81.5</td><td>74.8</td><td>64.0*</td></tr><tr><td>WeMath</td><td>63.8</td><td>31.0*</td><td>33.8</td><td>36.0*</td><td>66.3</td><td>46.0*</td><td>44.4*</td></tr><tr><td rowspan="3">OCR &amp; Chart</td><td>ChartQAPro</td><td>59.5</td><td>38.0*</td><td>36.1*</td><td>44.1*</td><td>53.6*</td><td>46.7*</td><td>49.4*</td></tr><tr><td>ChartMuseum</td><td>48.8</td><td>27.2*</td><td>21.5*</td><td>29.3*</td><td>44.4*</td><td>39.6*</td><td>42.7*</td></tr><tr><td>OCRBench</td><td>84.2</td><td>84.5*</td><td>87.7</td><td>78.7*</td><td>86.6</td><td>85.1*</td><td>81.1*</td></tr><tr><td>Long Document</td><td>MMLongBench-Doc</td><td>42.4</td><td>25.1*</td><td>20.4*</td><td>35.1</td><td>24.9*</td><td>35.2*</td><td>41.0*</td></tr><tr><td>Visual Grounding</td><td>RefCOCO-avg(val)</td><td>87.4</td><td>87.1†</td><td>88.7</td><td>-</td><td>89.6</td><td>90.2†</td><td>-</td></tr><tr><td rowspan="5">GUI Agents</td><td>OSWorld</td><td>14.9</td><td>1.9*</td><td>1.4*</td><td>8.2</td><td>1.9*</td><td>8.8</td><td>5.0†</td></tr><tr><td>AndroidWorld</td><td>41.7</td><td>27.6†1</td><td>1.9*</td><td>-</td><td>10.8*</td><td>35.0</td><td>34.5†2</td></tr><tr><td>WebVoyageSom</td><td>69.0</td><td>14.1*</td><td>19.5*</td><td>1.8*</td><td>34.0*</td><td>40.4*</td><td>59.4*</td></tr><tr><td>Webquest-SingleQA</td><td>72.1</td><td>53.5*</td><td>39.3*</td><td>56.8*</td><td>64.0*</td><td>60.5*</td><td>57.0*</td></tr><tr><td>Webquest-MultiQA</td><td>54.7</td><td>39.4*</td><td>26.4*</td><td>42.0*</td><td>47.5*</td><td>52.1*</td><td>52.8</td></tr><tr><td rowspan="2">Coding</td><td>Design2Code</td><td>64.7</td><td>29.1*</td><td>15.3*</td><td>38.8*</td><td>28.7*</td><td>41.9*</td><td>35.3*</td></tr><tr><td>Flame-React-Eval</td><td>72.5</td><td>25.0*</td><td>11.3*</td><td>36.3*</td><td>8.8*</td><td>46.3*</td><td>75.0*</td></tr><tr><td rowspan="5">Video Understanding</td><td>VideoMME (w/o)</td><td>68.2</td><td>65.1</td><td>66.7</td><td>67.8</td><td>67.4</td><td>73.3</td><td>71.9</td></tr><tr><td>VideoMME (w/)</td><td>73.6</td><td>71.6</td><td>68.9</td><td>72.6</td><td>72.8*</td><td>79.1</td><td>77.2</td></tr><tr><td>MMVU</td><td>59.4</td><td>50.1</td><td>-</td><td>-</td><td>52.4*</td><td>62.9</td><td>61.4*</td></tr><tr><td>LVBench</td><td>45.1</td><td>45.3</td><td>-</td><td>-</td><td>37.1*</td><td>47.3</td><td>48.9</td></tr><tr><td>MotionBench</td><td>59.0</td><td>-</td><td>-</td><td>-</td><td>48.4*</td><td>-</td><td>58.0*</td></tr></table>
 
-Table 3: Comparison of GLM-4.1V-9B-Thinking with other models on diverse visual-language benchmarks. Results marked with * correspond to our reproduced results, while those marked with are reported by third-party sources. The best results among open-source models under 10B parameters are bolded.
+<div align="center">
+
+Table 3: Comparison of GLM-4.1V-9B-Thinking with other models on diverse visual-language benchmarks. Results marked with $ ^{*} $ correspond to our reproduced results, while those marked with $ \dagger $ are reported by third-party sources. The best results among open-source models under 10B parameters are bolded.
+
+</div>
 
 $ ^{1} $ Tested with a predefined set of marks (SoM).
 
